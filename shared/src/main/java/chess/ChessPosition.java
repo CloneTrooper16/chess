@@ -14,6 +14,21 @@ public class ChessPosition {
         this.col = col;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        ChessPosition that = (ChessPosition) obj;
+        return that.row == row && that.col == col;
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * row + 37 * col;
+    }
+
+
+
     /**
      * @return which row this position is in
      * 1 codes for the bottom row
