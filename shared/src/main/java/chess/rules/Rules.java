@@ -11,7 +11,7 @@ public class Rules {
     static private final HashMap<ChessPiece.PieceType, MoveRule> rules = new HashMap<>();
 
     static {
-//        rules.put(KING, new KingMovementRule());
+        rules.put(KING, new KingMoveRule());
 //        rules.put(QUEEN, new QueenMovementRule());
 //        rules.put(KNIGHT, new KnightMovementRule());
         rules.put(BISHOP, new BishopMoveRule());
