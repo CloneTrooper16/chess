@@ -7,12 +7,18 @@ package chess;
  * signature of the existing methods.
  */
 public class ChessPosition {
-    private int row, col;
+    private final int row, col;
 
     public ChessPosition(int row, int col) {
         this.row = row;
         this.col = col;
     }
+
+    //copy constructor
+//    public ChessPosition(ChessPosition other) {
+//        this.row = other.row;
+//        this.col = other.col;
+//    }
 
     @Override
     public boolean equals(Object obj) {
@@ -27,7 +33,13 @@ public class ChessPosition {
         return 31 * row + 37 * col;
     }
 
-
+    @Override
+    public String toString() {
+        return "{" +
+                "row=" + row +
+                ", col=" + col +
+                '}';
+    }
 
     /**
      * @return which row this position is in
@@ -44,4 +56,12 @@ public class ChessPosition {
     public int getColumn() {
         return col;
     }
+
+//    public void setRow(int row) {
+//        this.row = row;
+//    }
+//
+//    public void setCol(int col) {
+//        this.col = col;
+//    }
 }

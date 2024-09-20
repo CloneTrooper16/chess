@@ -22,6 +22,12 @@ public class ChessMove {
         this(startPosition, endPosition, null);
     }
 
+    @Override
+    public String toString() {
+//        return start.toString() + " " + end.toString();
+        return end.toString();
+    }
+
     /**
      * @return ChessPosition of starting location
      */

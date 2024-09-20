@@ -13,8 +13,9 @@ public abstract class BaseMoveRule implements MoveRule {
                                   Collection<ChessMove> moves, boolean continueMoving) {
         for (int[] moveDirection : directions) {
             boolean moveAvailable = true;
+//            ChessPosition newPos = new ChessPosition(pos);
+            int[] moveToPosition = {pos.getRow() + moveDirection[0], pos.getColumn() + moveDirection[1]};
             while(moveAvailable) {
-                int[] moveToPosition = {pos.getRow() + moveDirection[0], pos.getColumn() + moveDirection[1]};
                 boolean onBoard = checkOnBoard(moveToPosition);
 
                 if (onBoard) {
@@ -23,6 +24,9 @@ public abstract class BaseMoveRule implements MoveRule {
                     if (emptySquare) {
                         //square is empty
                         moves.add(new ChessMove(pos, newPos));
+                        moveToPosition[0] += moveDirection[0];
+                        moveToPosition[1] += moveDirection[1];
+
                     } else {
                         boolean samePieceColor = isSameColor(board, pos, newPos);
                         if (!samePieceColor) {
@@ -47,7 +51,7 @@ public abstract class BaseMoveRule implements MoveRule {
     }
 
     private boolean checkSquareEmpty(ChessBoard board, ChessPosition pos) {
-        return board.getPiece(pos) != null;
+        return board.getPiece(pos) == null;
     }
 
     private boolean isSameColor(ChessBoard board, ChessPosition start, ChessPosition pos) {

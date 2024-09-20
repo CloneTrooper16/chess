@@ -1,5 +1,7 @@
 package chess;
 
+import chess.rules.Rules;
+
 import java.util.Collection;
 
 /**
@@ -51,6 +53,6 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
+        return Rules.pieceRule(type).moves(board, myPosition);
     }
 }
