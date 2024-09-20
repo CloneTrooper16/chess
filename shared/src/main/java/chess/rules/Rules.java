@@ -15,7 +15,7 @@ public class Rules {
         rules.put(QUEEN, new QueenMoveRule());
         rules.put(KNIGHT, new KnightMoveRule());
         rules.put(BISHOP, new BishopMoveRule());
-//        rules.put(ROOK, new RookMovementRule());
+        rules.put(ROOK, new RookMoveRule());
 //        rules.put(PAWN, new PawnMovementRule());
     }
 
