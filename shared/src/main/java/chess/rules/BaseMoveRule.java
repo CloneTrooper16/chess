@@ -46,15 +46,15 @@ public abstract class BaseMoveRule implements MoveRule {
         }
     }
 
-    private boolean checkOnBoard(int[] pos) {
+    protected boolean checkOnBoard(int[] pos) {
         return pos[0] > 0 && pos[0] < 9 && pos[1] > 0 && pos[1] < 9;
     }
 
-    private boolean checkSquareEmpty(ChessBoard board, ChessPosition pos) {
+    protected boolean checkSquareEmpty(ChessBoard board, ChessPosition pos) {
         return board.getPiece(pos) == null;
     }
 
-    private boolean isSameColor(ChessBoard board, ChessPosition start, ChessPosition pos) {
+    protected boolean isSameColor(ChessBoard board, ChessPosition start, ChessPosition pos) {
         ChessPiece piece = board.getPiece(start);
         ChessPiece otherPiece = board.getPiece(pos);
         return piece.getTeamColor() == otherPiece.getTeamColor();

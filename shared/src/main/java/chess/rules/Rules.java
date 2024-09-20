@@ -16,7 +16,7 @@ public class Rules {
         rules.put(KNIGHT, new KnightMoveRule());
         rules.put(BISHOP, new BishopMoveRule());
         rules.put(ROOK, new RookMoveRule());
-//        rules.put(PAWN, new PawnMovementRule());
+        rules.put(PAWN, new PawnMoveRule());
     }
 
     static public MoveRule pieceRule(PieceType type) {
