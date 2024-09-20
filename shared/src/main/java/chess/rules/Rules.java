@@ -12,7 +12,7 @@ public class Rules {
 
     static {
         rules.put(KING, new KingMoveRule());
-//        rules.put(QUEEN, new QueenMovementRule());
+        rules.put(QUEEN, new QueenMoveRule());
         rules.put(KNIGHT, new KnightMoveRule());
         rules.put(BISHOP, new BishopMoveRule());
 //        rules.put(ROOK, new RookMovementRule());
