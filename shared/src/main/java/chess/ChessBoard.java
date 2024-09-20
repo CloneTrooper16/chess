@@ -37,6 +37,27 @@ public class ChessBoard {
         return pieces.get(position);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        ChessBoard that = (ChessBoard) obj;
+        return that.toString().equals(this.toString());
+    }
+
+    @Override
+    public String toString() {
+//        String result = "";
+        String boardString = "________\n________\n________\n________\n________\n________\n________\n________\n";
+        for (ChessPosition key : pieces.keySet()) {
+            ChessPiece value = pieces.get(key);
+            int row = key.getRow();
+            int col = key.getColumn();
+            boardString = boardString.substring(0, (row - 1) * 9 + col-1) + value.toString() + boardString.substring((row - 1) * 9 + col);
+        }
+        return boardString;
+    }
+
     /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)

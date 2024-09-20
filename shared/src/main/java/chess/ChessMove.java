@@ -32,7 +32,16 @@ public class ChessMove {
 
     @Override
     public int hashCode() {
-        return start.hashCode() + end.hashCode() * 31;
+        int promoInt = 0;
+        if (promoPiece != null) {
+            switch (promoPiece) {
+                case ChessPiece.PieceType.QUEEN -> promoInt = 1;
+                case ChessPiece.PieceType.ROOK -> promoInt = 2;
+                case ChessPiece.PieceType.BISHOP -> promoInt = 3;
+                case ChessPiece.PieceType.KNIGHT -> promoInt = 4;
+            }
+        }
+        return (start.hashCode() + end.hashCode() + promoInt) * 31;
     }
 
     @Override
