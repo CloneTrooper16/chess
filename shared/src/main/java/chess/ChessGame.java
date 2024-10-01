@@ -1,5 +1,8 @@
 package chess;
 
+import chess.rulebook.FIDERuleBook;
+import chess.rulebook.RuleBook;
+
 import java.util.Collection;
 
 /**
@@ -11,9 +14,11 @@ import java.util.Collection;
 public class ChessGame {
     private TeamColor teamTurn;
     private ChessBoard board;
+    private final RuleBook ruleBook;
 
     public ChessGame() {
         this.teamTurn = TeamColor.WHITE;
+        this.ruleBook = new FIDERuleBook();
     }
 
     /**
@@ -68,7 +73,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return ruleBook.isInCheck(teamTurn);
     }
 
     /**

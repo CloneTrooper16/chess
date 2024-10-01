@@ -7,9 +7,8 @@ import chess.ChessPosition;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 
-public class FIDERuleBook implements ChessRuleBook{
+public class FIDERuleBook extends RuleBook{
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         return new HashSet<>();
     }
