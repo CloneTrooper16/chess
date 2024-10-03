@@ -55,6 +55,7 @@ public class FIDERuleBook extends RuleBook{
     }
 
     public boolean isInCheckmate(ChessGame.TeamColor teamColor) {
+        if (!isInCheck(teamColor)) return false;
         return false;
     }
 
