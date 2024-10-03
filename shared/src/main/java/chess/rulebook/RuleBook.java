@@ -13,4 +13,6 @@ public abstract class RuleBook implements ChessRuleBook{
     public abstract boolean isInCheck(ChessGame.TeamColor teamColor);
     public abstract boolean isInCheckmate(ChessGame.TeamColor teamColor);
     public abstract boolean isInStalemate(ChessGame.TeamColor teamColor);
+
+    public abstract void setBoard(ChessBoard board);
 }

@@ -1,6 +1,8 @@
 package chess;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 /**
@@ -11,9 +13,11 @@ import java.util.Map;
  */
 public class ChessBoard {
     private final Map<ChessPosition, ChessPiece> pieces;
+    private final Map<ChessPiece, ChessPosition> positions;
 
     public ChessBoard() {
         pieces = new HashMap<>();
+        positions = new HashMap<>();
     }
 
     /**
@@ -24,6 +28,7 @@ public class ChessBoard {
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
         pieces.put(position, piece);
+        positions.put(piece, position);
     }
 
     /**
@@ -35,6 +40,22 @@ public class ChessBoard {
      */
     public ChessPiece getPiece(ChessPosition position) {
         return pieces.get(position);
+    }
+
+    public ChessPosition getPosition(ChessPiece piece) {
+        return positions.get(piece);
+    }
+
+    public Collection<ChessMove> getAllMovesForTeam(ChessGame.TeamColor color) {
+        Collection<ChessMove> result = new HashSet<>();
+        for (ChessPosition key : pieces.keySet()) {
+            ChessPiece value = pieces.get(key);
+            ChessGame.TeamColor pieceColor = value.getTeamColor();
+            if (pieceColor == color) {
+                result.addAll(value.pieceMoves(this, key));
+            }
+        }
+        return result;
     }
 
     @Override
@@ -64,6 +85,7 @@ public class ChessBoard {
      */
     public void resetBoard() {
         pieces.clear();
+        positions.clear();
         addPiece(new ChessPosition(1,1), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK));
         addPiece(new ChessPosition(1,2), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT));
         addPiece(new ChessPosition(1,3), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP));

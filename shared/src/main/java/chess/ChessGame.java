@@ -4,6 +4,7 @@ import chess.rulebook.FIDERuleBook;
 import chess.rulebook.RuleBook;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -15,10 +16,13 @@ public class ChessGame {
     private TeamColor teamTurn;
     private ChessBoard board;
     private final RuleBook ruleBook;
+    private final Collection<ChessMove> whiteMoves = new HashSet<>();
+    private final Collection<ChessMove> blackMoves = new HashSet<>();
 
     public ChessGame() {
         this.teamTurn = TeamColor.WHITE;
-        this.ruleBook = new FIDERuleBook();
+        this.board = new ChessBoard();
+        this.ruleBook = new FIDERuleBook(board);
     }
 
     /**
@@ -44,6 +48,16 @@ public class ChessGame {
         WHITE,
         BLACK
     }
+
+//    public void getAllMovesByColor(TeamColor color) {
+//        if (color == TeamColor.WHITE) {
+//            whiteMoves.clear();
+//            whiteMoves.addAll(board.getAllMovesForTeam(color));
+//        } else {
+//            blackMoves.clear();
+//            blackMoves.addAll(board.getAllMovesForTeam(color));
+//        }
+//    }
 
     /**
      * Gets a valid moves for a piece at the given location
@@ -73,7 +87,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        return ruleBook.isInCheck(teamTurn);
+        return ruleBook.isInCheck(teamColor);
     }
 
     /**
@@ -104,6 +118,7 @@ public class ChessGame {
      */
     public void setBoard(ChessBoard board) {
         this.board = board;
+        ruleBook.setBoard(board);
     }
 
     /**
