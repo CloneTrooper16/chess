@@ -68,7 +68,7 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        return ruleBook.validMoves(startPosition);
     }
 
     /**
