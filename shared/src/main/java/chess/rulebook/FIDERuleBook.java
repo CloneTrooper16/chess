@@ -78,8 +78,7 @@ public class FIDERuleBook extends RuleBook{
         return false;
     }
 
-    public boolean isInCheckmate(ChessGame.TeamColor teamColor) {
-        if (!isInCheck(teamColor, board)) return false;
+    private boolean CheckForMoves(ChessGame.TeamColor teamColor) {
         ChessPosition checkedKingPos = board.getPosition(new ChessPiece(teamColor, ChessPiece.PieceType.KING));
         ChessPiece checkedKing = board.getPiece(checkedKingPos);
         Collection<ChessPosition> allPiecesOfColor = board.getAllPiecesByColor(teamColor);
@@ -90,8 +89,13 @@ public class FIDERuleBook extends RuleBook{
         return allValidMoves.isEmpty();
     }
 
+    public boolean isInCheckmate(ChessGame.TeamColor teamColor) {
+        if (!isInCheck(teamColor, board)) return false;
+        return CheckForMoves(teamColor);
+    }
+
     public boolean isInStalemate(ChessGame.TeamColor teamColor) {
-        return false;
+        return CheckForMoves(teamColor);
     }
 
     public void setBoard(ChessBoard board) {
