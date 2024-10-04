@@ -15,6 +15,14 @@ public class FIDERuleBook extends RuleBook{
         this.board = board;
     }
 
+    public void getAllMoves(ChessBoard board) {
+        whiteMoves.clear();
+        blackMoves.clear();
+
+        whiteMoves.addAll(board.getAllMovesForTeam(ChessGame.TeamColor.WHITE));
+        blackMoves.addAll(board.getAllMovesForTeam(ChessGame.TeamColor.BLACK));
+    }
+
     public void getAllMovesByColor(ChessGame.TeamColor color, ChessBoard board) {
         if (color == ChessGame.TeamColor.WHITE) {
             whiteMoves.clear();
@@ -28,6 +36,7 @@ public class FIDERuleBook extends RuleBook{
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece movingPiece = board.getPiece(startPosition);
         ChessGame.TeamColor movingColor = movingPiece.getTeamColor();
+        ChessGame.TeamColor oppositeColor = movingColor == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
         Collection<ChessMove> allMoves = movingPiece.pieceMoves(board, startPosition);
         Collection<ChessMove> realMoves = new HashSet<>();
         for (ChessMove move : allMoves) {
@@ -35,6 +44,7 @@ public class FIDERuleBook extends RuleBook{
             ChessBoard tempBoard = new ChessBoard(board);
             tempBoard.addPiece(move.getEndPosition(), movingPiece);
             tempBoard.removePiece(move.getStartPosition());
+            getAllMoves(tempBoard);
             if (!isInCheck(movingColor, tempBoard)) {
                 realMoves.add(move);
             }

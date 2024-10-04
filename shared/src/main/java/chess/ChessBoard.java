@@ -37,7 +37,7 @@ public class ChessBoard {
     }
 
     public void removePiece(ChessPosition position) {
-//        ChessPiece removedPiece = pieces.remove(position);
+        ChessPiece removedPiece = pieces.remove(position);
         for (ChessPiece key : positions.keySet()) {
             ChessPosition value = positions.get(key);
             if (value.equals(position)) {
