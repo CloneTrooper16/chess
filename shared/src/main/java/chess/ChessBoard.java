@@ -20,6 +20,11 @@ public class ChessBoard {
         positions = new HashMap<>();
     }
 
+    public ChessBoard(ChessBoard board) {
+        this.pieces = new HashMap<>(board.pieces);
+        this.positions = new HashMap<>(board.positions);
+    }
+
     /**
      * Adds a chess piece to the chessboard
      *
@@ -29,6 +34,17 @@ public class ChessBoard {
     public void addPiece(ChessPosition position, ChessPiece piece) {
         pieces.put(position, piece);
         positions.put(piece, position);
+    }
+
+    public void removePiece(ChessPosition position) {
+//        ChessPiece removedPiece = pieces.remove(position);
+        for (ChessPiece key : positions.keySet()) {
+            ChessPosition value = positions.get(key);
+            if (value.equals(position)) {
+                positions.remove(key);
+                break;
+            }
+        }
     }
 
     /**
@@ -44,6 +60,17 @@ public class ChessBoard {
 
     public ChessPosition getPosition(ChessPiece piece) {
         return positions.get(piece);
+    }
+
+    public Collection<ChessPosition> getAllPiecesByColor(ChessGame.TeamColor color) {
+        Collection<ChessPosition> allPieces = new HashSet<>();
+        for (ChessPosition key : pieces.keySet()) {
+            ChessPiece value = pieces.get(key);
+            if (value.getTeamColor() == color) {
+                allPieces.add(key);
+            }
+        }
+        return allPieces;
     }
 
     public Collection<ChessMove> getAllMovesForTeam(ChessGame.TeamColor color) {

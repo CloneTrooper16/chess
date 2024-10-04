@@ -10,7 +10,7 @@ import java.util.Collection;
 public abstract class RuleBook implements ChessRuleBook{
     public abstract Collection<ChessMove> validMoves(ChessPosition startPosition);
     public abstract boolean isBoardValid(ChessBoard board);
-    public abstract boolean isInCheck(ChessGame.TeamColor teamColor);
+    public abstract boolean isInCheck(ChessGame.TeamColor teamColor, ChessBoard board);
     public abstract boolean isInCheckmate(ChessGame.TeamColor teamColor);
     public abstract boolean isInStalemate(ChessGame.TeamColor teamColor);
 

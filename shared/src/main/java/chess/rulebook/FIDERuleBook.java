@@ -2,6 +2,7 @@ package chess.rulebook;
 
 import chess.*;
 
+import javax.swing.*;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -14,7 +15,7 @@ public class FIDERuleBook extends RuleBook{
         this.board = board;
     }
 
-    public void getAllMovesByColor(ChessGame.TeamColor color) {
+    public void getAllMovesByColor(ChessGame.TeamColor color, ChessBoard board) {
         if (color == ChessGame.TeamColor.WHITE) {
             whiteMoves.clear();
             whiteMoves.addAll(board.getAllMovesForTeam(color));
@@ -25,18 +26,31 @@ public class FIDERuleBook extends RuleBook{
     }
 
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
+        ChessPiece movingPiece = board.getPiece(startPosition);
+        ChessGame.TeamColor movingColor = movingPiece.getTeamColor();
+        Collection<ChessMove> allMoves = movingPiece.pieceMoves(board, startPosition);
+        Collection<ChessMove> realMoves = new HashSet<>();
+        for (ChessMove move : allMoves) {
+            //copy board, make move, and test for check?
+            ChessBoard tempBoard = new ChessBoard(board);
+            tempBoard.addPiece(move.getEndPosition(), movingPiece);
+            tempBoard.removePiece(move.getStartPosition());
+            if (!isInCheck(movingColor, tempBoard)) {
+                realMoves.add(move);
+            }
+        }
 
-        return new HashSet<>();
+        return realMoves;
     }
 
     public boolean isBoardValid(ChessBoard board) {
         return false;
     }
 
-    public boolean isInCheck(ChessGame.TeamColor teamColor) {
+    public boolean isInCheck(ChessGame.TeamColor teamColor, ChessBoard board) {
         ChessPosition kingPos = board.getPosition(new ChessPiece(teamColor, ChessPiece.PieceType.KING));
         if (teamColor == ChessGame.TeamColor.WHITE) {
-            getAllMovesByColor(ChessGame.TeamColor.BLACK);
+            getAllMovesByColor(ChessGame.TeamColor.BLACK, board);
             for (ChessMove move : blackMoves) {
                 if (move.getEndPosition().equals(kingPos)) {
                     return true;
@@ -44,7 +58,7 @@ public class FIDERuleBook extends RuleBook{
             }
         }
         else {
-            getAllMovesByColor(ChessGame.TeamColor.WHITE);
+            getAllMovesByColor(ChessGame.TeamColor.WHITE, board);
             for (ChessMove move : whiteMoves) {
                 if (move.getEndPosition().equals(kingPos)) {
                     return true;
@@ -55,8 +69,15 @@ public class FIDERuleBook extends RuleBook{
     }
 
     public boolean isInCheckmate(ChessGame.TeamColor teamColor) {
-        if (!isInCheck(teamColor)) return false;
-        return false;
+        if (!isInCheck(teamColor, board)) return false;
+        ChessPosition checkedKingPos = board.getPosition(new ChessPiece(teamColor, ChessPiece.PieceType.KING));
+        ChessPiece checkedKing = board.getPiece(checkedKingPos);
+        Collection<ChessPosition> allPiecesOfColor = board.getAllPiecesByColor(teamColor);
+        Collection<ChessMove> allValidMoves = new HashSet<>();
+        for (ChessPosition piece : allPiecesOfColor) {
+            allValidMoves.addAll(validMoves(piece));
+        }
+        return allValidMoves.isEmpty();
     }
 
     public boolean isInStalemate(ChessGame.TeamColor teamColor) {

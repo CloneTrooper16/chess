@@ -88,7 +88,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        return ruleBook.isInCheck(teamColor);
+        return ruleBook.isInCheck(teamColor, board);
     }
 
     /**
