@@ -90,6 +90,9 @@ public class ChessGame {
         }
         for (ChessMove validMove : pieceValidMoves) {
             if (validMove.equals(move)) {
+                ChessPiece movingPiece = board.getPiece(move.getStartPosition());
+                board.addPiece(move.getEndPosition(), movingPiece);
+                board.removePiece(move.getStartPosition());
                 return;
             }
         }
