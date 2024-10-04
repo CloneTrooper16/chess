@@ -88,6 +88,12 @@ public class ChessGame {
         if (pieceValidMoves.isEmpty()) {
             throw new InvalidMoveException();
         }
+        for (ChessMove validMove : pieceValidMoves) {
+            if (validMove.equals(move)) {
+                return;
+            }
+        }
+        throw new InvalidMoveException();
     }
 
     /**
