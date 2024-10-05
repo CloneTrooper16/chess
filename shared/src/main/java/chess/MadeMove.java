@@ -4,15 +4,17 @@ public class MadeMove {
     private final ChessMove move;
     private final MovedPiece piece;
     private final MoveType type;
+    private final ChessGame.TeamColor color;
 
-    MadeMove(MovedPiece piece, ChessMove move, MoveType type) {
+    MadeMove(ChessGame.TeamColor color, MovedPiece piece, ChessMove move, MoveType type) {
         this.piece = piece;
         this.move = move;
         this.type = type;
+        this.color = color;
     }
 
-    MadeMove(MovedPiece piece, ChessMove move) {
-        this(piece, move, null);
+    MadeMove(ChessGame.TeamColor color, MovedPiece piece, ChessMove move) {
+        this(color, piece, move, null);
     }
 
     public enum MovedPiece {

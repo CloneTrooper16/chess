@@ -16,8 +16,7 @@ public class ChessGame {
     private TeamColor teamTurn;
     private ChessBoard board;
     private final RuleBook ruleBook;
-    private final Collection<ChessMove> whiteMoves = new HashSet<>();
-    private final Collection<ChessMove> blackMoves = new HashSet<>();
+
 
     public ChessGame() {
         this.teamTurn = TeamColor.WHITE;
@@ -50,15 +49,112 @@ public class ChessGame {
         BLACK
     }
 
-//    public void getAllMovesByColor(TeamColor color) {
-//        if (color == TeamColor.WHITE) {
-//            whiteMoves.clear();
-//            whiteMoves.addAll(board.getAllMovesForTeam(color));
-//        } else {
-//            blackMoves.clear();
-//            blackMoves.addAll(board.getAllMovesForTeam(color));
-//        }
-//    }
+    private TeamColor getOppositeColor(TeamColor color) {
+        return color == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
+    }
+
+    boolean isSpecialMove(ChessMove move, ChessPiece.PieceType pieceType) {
+        if (!(pieceType == ChessPiece.PieceType.KING || pieceType == ChessPiece.PieceType.PAWN)) {
+            return false;
+        }
+        int moveStartCol = move.getStartPosition().getColumn();
+        int moveEndCol = move.getEndPosition().getColumn();
+        if (pieceType == ChessPiece.PieceType.KING) {
+            return moveStartCol + 2 == moveEndCol || moveStartCol - 2 == moveEndCol;
+        } else {
+            //piece is a pawn;
+            return moveStartCol != moveEndCol && board.getPiece(move.getEndPosition()) == null;
+        }
+    }
+
+    private void handleOtherPiece(ChessPiece movingPiece, ChessMove move) {
+        ChessPiece.PieceType pieceType = movingPiece.getPieceType();
+        TeamColor color = movingPiece.getTeamColor();
+        int moveStartRow = move.getStartPosition().getRow();
+        if (pieceType == ChessPiece.PieceType.KING) {
+            ChessPosition movingRookPos;
+            if (move.getEndPosition().getColumn() > move.getStartPosition().getColumn()) {
+                //kingSide Castle
+                movingRookPos = new ChessPosition(moveStartRow, 8);
+                ChessPiece movingRook = board.getPiece(movingRookPos);
+                board.addPiece(new ChessPosition(moveStartRow, 6), movingRook);
+            } else {
+                //QueenSide Castle
+                movingRookPos = new ChessPosition(moveStartRow, 1);
+                ChessPiece movingRook = board.getPiece(movingRookPos);
+                board.addPiece(new ChessPosition(moveStartRow, 4), movingRook);
+            }
+            board.removePiece(movingRookPos);
+        } else {
+            //piece == pawn
+        }
+    }
+
+    private void setPieceMoved(ChessMove move, ChessPiece movingPiece) {
+        ChessPiece.PieceType pieceType = movingPiece.getPieceType();
+        TeamColor pieceColor = movingPiece.getTeamColor();
+        if (!(pieceType == ChessPiece.PieceType.KING || pieceType == ChessPiece.PieceType.ROOK)) {
+            return;
+        }
+        if (pieceType == ChessPiece.PieceType.KING) {
+            if (pieceColor == TeamColor.WHITE) {
+                ruleBook.setWhiteKingMoved(true);
+            } else {
+                //Piece is black
+                ruleBook.setBlackKingMoved(true);
+            }
+        } else {
+            //pieceType == ROOK
+            int moveStartCol = move.getStartPosition().getColumn();
+            int moveStartRow = move.getStartPosition().getRow();
+            if (pieceColor == TeamColor.WHITE) {
+                if (moveStartCol == 1 && moveStartRow == 1) {
+                    //A rook
+                    ruleBook.setWhiteARookMoved(true);
+                } else if (moveStartCol == 8 && moveStartRow == 1){
+                    //H rook
+                    ruleBook.setWhiteHRookMoved(true);
+                }
+            } else {
+                //Piece is black
+                if (moveStartCol == 1 && moveStartRow == 8) {
+                    //A rook
+                    ruleBook.setBlackARookMoved(true);
+                } else if (moveStartCol == 8 && moveStartRow == 8) {
+                    //H rook
+                    ruleBook.setBlackHRookMoved(true);
+                }
+            }
+        }
+    }
+
+    MadeMove.MovedPiece getMovedPieceType(boolean specialMove, ChessPiece movingPiece) {
+        if (specialMove) {
+            return MadeMove.MovedPiece.KINGSIDECASTLE;
+        } else {
+            switch (movingPiece.getPieceType()) {
+                case BISHOP -> {
+                    return MadeMove.MovedPiece.BISHOP;
+                }
+                case KNIGHT -> {
+                    return MadeMove.MovedPiece.KNIGHT;
+                }
+                case KING -> {
+                    return MadeMove.MovedPiece.KING;
+                }
+                case PAWN -> {
+                    return MadeMove.MovedPiece.PAWN;
+                }
+                case QUEEN -> {
+                    return MadeMove.MovedPiece.QUEEN;
+                }
+                case ROOK -> {
+                    return MadeMove.MovedPiece.ROOK;
+                }
+            }
+        }
+        return null;
+    }
 
     /**
      * Gets a valid moves for a piece at the given location
@@ -91,8 +187,23 @@ public class ChessGame {
         for (ChessMove validMove : pieceValidMoves) {
             if (validMove.equals(move)) {
                 ChessPiece movingPiece = board.getPiece(move.getStartPosition());
-                board.addPiece(move.getEndPosition(), movingPiece);
+                TeamColor oppositeColor = getOppositeColor(movingPiece.getTeamColor());
+                boolean specialMove = isSpecialMove(move, movingPiece.getPieceType());
+                MadeMove.MovedPiece movedPieceType = getMovedPieceType(specialMove, movingPiece);
+
+                if (move.getPromotionPiece() == null) {
+                    board.addPiece(move.getEndPosition(), movingPiece);
+                } else {
+                    ChessPiece newPiece = new ChessPiece(movingPiece.getTeamColor(), move.getPromotionPiece());
+                    board.addPiece(move.getEndPosition(), newPiece);
+                }
                 board.removePiece(move.getStartPosition());
+                if (specialMove) {
+                    handleOtherPiece(movingPiece, move);
+                }
+                ruleBook.recordMove(movingPiece.getTeamColor(), move, movedPieceType, null);
+                setPieceMoved(move, movingPiece);
+                setTeamTurn(oppositeColor);
                 return;
             }
         }
@@ -138,6 +249,7 @@ public class ChessGame {
     public void setBoard(ChessBoard board) {
         this.board = board;
         ruleBook.setBoard(board);
+        ruleBook.resetMovedPieces();
     }
 
     /**
