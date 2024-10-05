@@ -87,6 +87,14 @@ public class ChessGame {
             board.removePiece(movingRookPos);
         } else {
             //piece == pawn
+            ChessPosition pawnPos = move.getEndPosition();
+            int pawnCol = pawnPos.getColumn();
+            int pawnRow = pawnPos.getRow();
+            if (color == TeamColor.WHITE) {
+                board.removePiece(new ChessPosition(pawnRow - 1, pawnCol));
+            } else {
+                board.removePiece(new ChessPosition(pawnRow + 1, pawnCol));
+            }
         }
     }
 

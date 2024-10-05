@@ -58,6 +58,7 @@ public class FIDERuleBook extends RuleBook{
         }
         if (movingPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
             Collection<ChessMove> enPassant = getEnPassantMove(movingColor, realMoves, startPosition, board);
+            realMoves.addAll(enPassant);
         }
 
 
@@ -172,7 +173,7 @@ public class FIDERuleBook extends RuleBook{
         Collection<ChessMove> result = new HashSet<>();
         MadeMove lastMove = moveHistory.getLastMove();
         if (lastMove != null) {
-            if (!(lastMove.getPiece() == MadeMove.MovedPiece.PAWN)) {
+            if (lastMove.getPiece() == MadeMove.MovedPiece.PAWN) {
                 int lastMoveStartRow = lastMove.getMove().getStartPosition().getRow();
                 int lastMoveEndRow = lastMove.getMove().getEndPosition().getRow();
                 if (Math.abs(lastMoveEndRow - lastMoveStartRow) > 1) {
@@ -238,7 +239,7 @@ public class FIDERuleBook extends RuleBook{
     }
 
     public void recordMove(ChessGame.TeamColor color, ChessMove move, MadeMove.MovedPiece piece, MadeMove.MoveType type) {
-
+        moveHistory.recordMove(color, move, piece, type);
     }
 
     public void setBoard(ChessBoard board) {
