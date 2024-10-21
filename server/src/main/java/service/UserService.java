@@ -26,11 +26,21 @@ public class UserService {
         AuthData newAuth = new AuthData(authToken, newUser.username());
         return authDataAccess.addAuth(newAuth);
     }
-    public AuthData login(UserData user) {
-        return new AuthData("dummy", "data");
+    public AuthData login(UserData user) throws DataAccessException {
+        var userInfo = getUser(user.username());
+        if (userInfo != null) {
+            if (user.password().equals(userInfo.password())) {
+                if (authDataAccess.getAuthByUsername(user.username()) == null) {
+                    String authToken = AuthService.generateToken();
+                    AuthData newAuth = new AuthData(authToken, user.username());
+                    return authDataAccess.addAuth(newAuth);
+                }
+            }
+        }
+        throw new DataAccessException("unauthorized");
     }
 
-    public UserData getUser(String username ) throws DataAccessException {
+    public UserData getUser(String username) throws DataAccessException {
         return userDataAccess.getUser(username);
     }
 

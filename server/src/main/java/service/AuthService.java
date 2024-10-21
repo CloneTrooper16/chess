@@ -20,7 +20,8 @@ public class AuthService {
 
     public void logout(String authToken) throws DataAccessException {
         if (isValidAuth(authToken)) {
-            authDataAccess.deleteAuth(authToken);
+            var auth = getAuth(authToken);
+            authDataAccess.deleteAuth(auth);
         } else {
             throw new DataAccessException("unauthorized");
         }
