@@ -30,11 +30,9 @@ public class UserService {
         var userInfo = getUser(user.username());
         if (userInfo != null) {
             if (user.password().equals(userInfo.password())) {
-//                if (authDataAccess.getAuthByUsername(user.username()) == null) {
-                    String authToken = AuthService.generateToken();
-                    AuthData newAuth = new AuthData(authToken, user.username());
-                    return authDataAccess.addAuth(newAuth);
-//                }
+                String authToken = AuthService.generateToken();
+                AuthData newAuth = new AuthData(authToken, user.username());
+                return authDataAccess.addAuth(newAuth);
             }
         }
         throw new DataAccessException("unauthorized");
