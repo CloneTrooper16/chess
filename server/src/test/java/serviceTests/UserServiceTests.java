@@ -1,7 +1,6 @@
 package serviceTests;
 
 import dataaccess.*;
-import model.AuthData;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,5 +37,15 @@ public class UserServiceTests {
         var auth = uService.register(user);
 
         assertThrows(DataAccessException.class, () -> uService.register(user));
+    }
+
+    @Test
+    void logout() throws DataAccessException {
+        var user = new UserData("john doe", "password", "example@mail.com");
+        var auth = uService.register(user);
+
+//        uService.logout(auth);
+
+        assertDoesNotThrow(() -> uService.logout(auth));
     }
 }
