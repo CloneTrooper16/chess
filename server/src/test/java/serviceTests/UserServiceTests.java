@@ -46,6 +46,6 @@ public class UserServiceTests {
 
 //        uService.logout(auth);
 
-        assertDoesNotThrow(() -> uService.logout(auth));
+        assertDoesNotThrow(() -> aService.logout(auth.authToken()));
     }
 }

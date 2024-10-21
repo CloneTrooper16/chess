@@ -22,12 +22,12 @@ public class Server {
 //        Spark.get("/game", this::listGames);
 
         Spark.post("/user", handler::registerUser);
-//        Spark.post("/session", handler::loginUser);
+        Spark.post("/session", handler::loginUser);
 //        Spark.post("/game", this::createGame);
 //
 //        Spark.put("/game", this::joinGame);
 //
-//        Spark.delete("/session", this::logoutUser);
+        Spark.delete("/session", handler::logoutUser);
         Spark.delete("/db", handler::deleteDB);
 
         Spark.exception(DataAccessException.class, handler::exceptionHandler);

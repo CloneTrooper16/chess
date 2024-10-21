@@ -18,12 +18,24 @@ public class AuthService {
         return authDataAccess.getAuth(authToken);
     }
 
+    public void logout(String authToken) throws DataAccessException {
+        if (isValidAuth(authToken)) {
+            authDataAccess.deleteAuth(authToken);
+        } else {
+            throw new DataAccessException("unauthorized");
+        }
+    }
+
     public void deleteAllAuths() throws DataAccessException {
         authDataAccess.deleteAllAuths();
     }
 
     static String generateToken() {
         return UUID.randomUUID().toString();
+    }
+
+    private boolean isValidAuth(String authToken) throws DataAccessException {
+        return authDataAccess.getAuth(authToken) != null;
     }
 
 

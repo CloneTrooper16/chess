@@ -29,7 +29,6 @@ public class UserService {
     public AuthData login(UserData user) {
         return new AuthData("dummy", "data");
     }
-    public void logout(AuthData auth) {}
 
     public UserData getUser(String username ) throws DataAccessException {
         return userDataAccess.getUser(username);
