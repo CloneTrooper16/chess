@@ -18,6 +18,9 @@ public class UserService {
         if (userDataAccess.getUser(user.username()) != null) {
             throw new DataAccessException("already taken");
         }
+        if (user.password() == null || user.password().isEmpty()) {
+            throw new DataAccessException("bad request");
+        }
         var newUser = userDataAccess.addUser(user);
         String authToken = AuthService.generateToken();
         AuthData newAuth = new AuthData(authToken, newUser.username());
@@ -27,4 +30,12 @@ public class UserService {
         return new AuthData("dummy", "data");
     }
     public void logout(AuthData auth) {}
+
+    public UserData getUser(String username ) throws DataAccessException {
+        return userDataAccess.getUser(username);
+    }
+
+    public void deleteAllUsers() throws DataAccessException {
+        userDataAccess.deleteAllUsers();
+    }
 }
