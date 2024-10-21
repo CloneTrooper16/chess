@@ -8,6 +8,7 @@ import service.AuthService;
 import service.UserService;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static service.AuthService.generateToken;
 
 public class UserServiceTests {
     private static final AuthDAO authDataAccess = new MemoryAuthDAO();
@@ -44,8 +45,27 @@ public class UserServiceTests {
         var user = new UserData("john doe", "password", "example@mail.com");
         var auth = uService.register(user);
 
+        assertDoesNotThrow(() -> aService.logout(auth.authToken()));
+    }
+
+    @Test
+    void logoutFail() throws DataAccessException {
+        var user = new UserData("john doe", "password", "example@mail.com");
+        var auth = uService.register(user);
+
 //        uService.logout(auth);
 
-        assertDoesNotThrow(() -> aService.logout(auth.authToken()));
+        assertThrows(DataAccessException.class, () -> aService.logout(generateToken()));
+    }
+
+    @Test
+    void login() throws DataAccessException {
+        var user = new UserData("john doe", "password", "example@mail.com");
+        var auth = uService.register(user);
+        aService.logout(auth.authToken());
+
+        var madeAuth = uService.login(user);
+
+        assertNotNull(madeAuth);
     }
 }

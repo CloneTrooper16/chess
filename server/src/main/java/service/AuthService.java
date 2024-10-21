@@ -31,7 +31,7 @@ public class AuthService {
         authDataAccess.deleteAllAuths();
     }
 
-    static String generateToken() {
+    public static String generateToken() {
         return UUID.randomUUID().toString();
     }
 
