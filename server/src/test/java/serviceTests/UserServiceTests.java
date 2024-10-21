@@ -68,4 +68,15 @@ public class UserServiceTests {
 
         assertNotNull(madeAuth);
     }
+
+    @Test
+    void loginFail() throws DataAccessException {
+        var user = new UserData("john doe", "password", "example@mail.com");
+        var auth = uService.register(user);
+        aService.logout(auth.authToken());
+
+        var badUser = new UserData("john doe", "badPassword", null);
+
+        assertThrows(DataAccessException.class, () -> uService.login(badUser));
+    }
 }
