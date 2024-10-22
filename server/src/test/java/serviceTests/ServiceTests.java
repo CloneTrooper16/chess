@@ -93,7 +93,25 @@ public class ServiceTests {
         assertThrows(DataAccessException.class, () -> gService.createGame(auth.authToken() + "badStuff", "name"));
     }
 
+    @Test
+    void getUser() throws DataAccessException {
+        var user = new UserData("john doe", "password", "example@mail.com");
+        uService.register(user);
 
+        var grabbedUser = uService.getUser(user.username());
+
+        assertEquals(user, grabbedUser);
+    }
+
+    @Test
+    void getUserFail() throws DataAccessException {
+        var user = new UserData("john doe", "password", "example@mail.com");
+        uService.register(user);
+
+        var grabbedUser = uService.getUser(user.username() + "badStuff");
+
+        assertNotEquals(user, grabbedUser);
+    }
 
     AuthData addUser() throws DataAccessException{
         var user = new UserData("john doe", "password", "example@mail.com");
