@@ -21,21 +21,7 @@ public abstract class BaseMoveRule implements MoveRule {
                 if (onBoard) {
                     ChessPosition newPos = new ChessPosition(moveToPosition[0], moveToPosition[1]);
                     boolean emptySquare = checkSquareEmpty(board, newPos);
-                    if (emptySquare) {
-                        //square is empty
-                        moves.add(new ChessMove(pos, newPos));
-                        moveToPosition[0] += moveDirection[0];
-                        moveToPosition[1] += moveDirection[1];
-
-                    } else {
-                        boolean samePieceColor = isSameColor(board, pos, newPos);
-                        if (!samePieceColor) {
-                            //opposing piece occupies the square.
-                            moves.add(new ChessMove(pos, newPos));
-                        }
-                        //stop making new options in this direction
-                        moveAvailable = false;
-                    }
+                    moveAvailable = addPossibleMoves(moves, pos, newPos, moveToPosition, moveDirection, emptySquare, moveAvailable, board);
                     if (!continueMoving) {
                         moveAvailable = false;
                     }
@@ -44,6 +30,26 @@ public abstract class BaseMoveRule implements MoveRule {
                 }
             }
         }
+    }
+    private boolean addPossibleMoves(Collection<ChessMove> moves, ChessPosition pos, ChessPosition newPos,
+                                    int[] moveToPosition, int[] moveDirection,
+                                    boolean emptySquare, boolean moveAvailable, ChessBoard board) {
+        if (emptySquare) {
+            //square is empty
+            moves.add(new ChessMove(pos, newPos));
+            moveToPosition[0] += moveDirection[0];
+            moveToPosition[1] += moveDirection[1];
+
+        } else {
+            boolean samePieceColor = isSameColor(board, pos, newPos);
+            if (!samePieceColor) {
+                //opposing piece occupies the square.
+                moves.add(new ChessMove(pos, newPos));
+            }
+            //stop making new options in this direction
+            moveAvailable = false;
+        }
+        return moveAvailable;
     }
 
     protected boolean checkOnBoard(int[] pos) {

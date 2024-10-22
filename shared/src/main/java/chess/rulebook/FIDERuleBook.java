@@ -174,24 +174,22 @@ public class FIDERuleBook extends RuleBook{
                                                       ChessPosition pawnPos, ChessBoard board) {
         Collection<ChessMove> result = new HashSet<>();
         MadeMove lastMove = moveHistory.getLastMove();
-        if (lastMove != null) {
-            if (lastMove.getPiece() == MadeMove.MovedPiece.PAWN) {
-                int lastMoveStartRow = lastMove.getMove().getStartPosition().getRow();
-                int lastMoveEndRow = lastMove.getMove().getEndPosition().getRow();
-                if (Math.abs(lastMoveEndRow - lastMoveStartRow) > 1) {
-                    int pawnRow = pawnPos.getRow();
-                    int pawnCol = pawnPos.getColumn();
-                    int lastMoveEndCol = lastMove.getMove().getEndPosition().getColumn();
-                    if (pawnRow == lastMoveEndRow && (Math.abs(pawnCol - lastMoveEndCol) == 1)) {
-                        Collection<ChessMove> enPassantMove = new HashSet<>();
-                        ChessPiece pawn = board.getPiece(pawnPos);
-                        if (color == ChessGame.TeamColor.WHITE) {
-                            enPassantMove.add(new ChessMove(pawnPos, new ChessPosition(pawnRow + 1, lastMoveEndCol)));
-                        } else {
-                            enPassantMove.add(new ChessMove(pawnPos, new ChessPosition(pawnRow - 1, lastMoveEndCol)));
-                        }
-                        result.addAll(validEnPassantMove(enPassantMove, pawn, lastMove.getMove().getEndPosition()));
+        if (lastMove != null && lastMove.getPiece() == MadeMove.MovedPiece.PAWN) {
+            int lastMoveStartRow = lastMove.getMove().getStartPosition().getRow();
+            int lastMoveEndRow = lastMove.getMove().getEndPosition().getRow();
+            if (Math.abs(lastMoveEndRow - lastMoveStartRow) > 1) {
+                int pawnRow = pawnPos.getRow();
+                int pawnCol = pawnPos.getColumn();
+                int lastMoveEndCol = lastMove.getMove().getEndPosition().getColumn();
+                if (pawnRow == lastMoveEndRow && (Math.abs(pawnCol - lastMoveEndCol) == 1)) {
+                    Collection<ChessMove> enPassantMove = new HashSet<>();
+                    ChessPiece pawn = board.getPiece(pawnPos);
+                    if (color == ChessGame.TeamColor.WHITE) {
+                        enPassantMove.add(new ChessMove(pawnPos, new ChessPosition(pawnRow + 1, lastMoveEndCol)));
+                    } else {
+                        enPassantMove.add(new ChessMove(pawnPos, new ChessPosition(pawnRow - 1, lastMoveEndCol)));
                     }
+                    result.addAll(validEnPassantMove(enPassantMove, pawn, lastMove.getMove().getEndPosition()));
                 }
             }
         }

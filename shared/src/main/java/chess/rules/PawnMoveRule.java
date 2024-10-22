@@ -49,14 +49,18 @@ public class PawnMoveRule extends BaseMoveRule{
                 if (!emptySquare) {
                     boolean samePieceColor = isSameColor(board, pos, newPos);
                     if (!samePieceColor) {
-                        if (movesToBackRow(newPos)) {
-                            addBackRowMoves(moves, pos, newPos);
-                        } else {
-                            moves.add(new ChessMove(pos, newPos));
-                        }
+                        addPossiblePawnMoves(moves, pos, newPos);
                     }
                 }
             }
+        }
+    }
+
+    private void addPossiblePawnMoves(Collection<ChessMove> moves, ChessPosition pos, ChessPosition newPos) {
+        if (movesToBackRow(newPos)) {
+            addBackRowMoves(moves, pos, newPos);
+        } else {
+            moves.add(new ChessMove(pos, newPos));
         }
     }
 
