@@ -231,12 +231,16 @@ public class FIDERuleBook extends RuleBook{
     }
 
     public boolean isInCheckmate(ChessGame.TeamColor teamColor) {
-        if (!isInCheck(teamColor, board)) return false;
+        if (!isInCheck(teamColor, board)) {
+            return false;
+        }
         return checkForMoves(teamColor);
     }
 
     public boolean isInStalemate(ChessGame.TeamColor teamColor) {
-        if (isInCheck(teamColor, board)) return false;
+        if (isInCheck(teamColor, board)) {
+            return false;
+        }
         return checkForMoves(teamColor);
     }
 
