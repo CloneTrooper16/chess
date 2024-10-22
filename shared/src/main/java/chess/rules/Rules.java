@@ -8,18 +8,18 @@ import static chess.ChessPiece.PieceType;
 import static chess.ChessPiece.PieceType.*;
 
 public class Rules {
-    static private final HashMap<ChessPiece.PieceType, MoveRule> rules = new HashMap<>();
+    static private final HashMap<ChessPiece.PieceType, MoveRule> RULES = new HashMap<>();
 
     static {
-        rules.put(KING, new KingMoveRule());
-        rules.put(QUEEN, new QueenMoveRule());
-        rules.put(KNIGHT, new KnightMoveRule());
-        rules.put(BISHOP, new BishopMoveRule());
-        rules.put(ROOK, new RookMoveRule());
-        rules.put(PAWN, new PawnMoveRule());
+        RULES.put(KING, new KingMoveRule());
+        RULES.put(QUEEN, new QueenMoveRule());
+        RULES.put(KNIGHT, new KnightMoveRule());
+        RULES.put(BISHOP, new BishopMoveRule());
+        RULES.put(ROOK, new RookMoveRule());
+        RULES.put(PAWN, new PawnMoveRule());
     }
 
     static public MoveRule pieceRule(PieceType type) {
-        return rules.get(type);
+        return RULES.get(type);
     }
 }
