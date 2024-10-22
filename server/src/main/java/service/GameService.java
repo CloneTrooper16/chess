@@ -87,4 +87,8 @@ public class GameService {
     public void deleteAllGames() throws DataAccessException {
         gameDataAccess.clear();
     }
+
+    public int getNextID() {
+        return gameDataAccess.getNextID();
+    }
 }

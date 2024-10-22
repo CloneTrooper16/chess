@@ -1,6 +1,8 @@
 package serviceTests;
 
+import chess.ChessGame;
 import dataaccess.*;
+import handler.Handler;
 import model.AuthData;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import service.AuthService;
 import service.GameService;
 import service.UserService;
+
+import javax.xml.crypto.Data;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static service.AuthService.generateToken;
@@ -81,10 +85,10 @@ public class ServiceTests {
     @Test
     void createGame() throws DataAccessException {
         var auth = addUser();
-
+        int expectedID = gService.getNextID();
         var id = gService.createGame(auth.authToken(), "gameName");
 
-        assertEquals(1, id); //maybe change this to listGames when written;
+        assertEquals(expectedID, id); //maybe change this to listGames when written;
     }
 
     @Test
@@ -129,8 +133,26 @@ public class ServiceTests {
         assertNotEquals(auth, grabbedAuth);
     }
 
+    @Test
+    void joinGame() throws DataAccessException {
+        var auth = addUser();
+        int id = createTestGame(auth);
+        assertDoesNotThrow(()-> gService.joinGame(auth.authToken(), new Handler.JoinGameRequest(ChessGame.TeamColor.WHITE, id)));
+    }
+
+    @Test
+    void joinGameFail() throws DataAccessException {
+        var auth = addUser();
+        int id = createTestGame(auth);
+        assertThrows(DataAccessException.class, ()-> gService.joinGame(auth.authToken() + "badStuff", new Handler.JoinGameRequest(ChessGame.TeamColor.WHITE, id)));
+    }
+
     AuthData addUser() throws DataAccessException{
         var user = new UserData("john doe", "password", "example@mail.com");
         return uService.register(user);
+    }
+
+    int createTestGame(AuthData auth) throws DataAccessException {
+        return gService.createGame(auth.authToken(), "gameName");
     }
 }

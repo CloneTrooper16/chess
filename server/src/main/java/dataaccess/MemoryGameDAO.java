@@ -36,4 +36,8 @@ public class MemoryGameDAO implements GameDAO{
     public void clear() throws DataAccessException {
         games.clear();
     }
+
+    public int getNextID() {
+        return nextID;
+    }
 }
