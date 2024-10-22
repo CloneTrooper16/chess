@@ -113,6 +113,22 @@ public class ServiceTests {
         assertNotEquals(user, grabbedUser);
     }
 
+    @Test
+    void getAuth() throws DataAccessException {
+        var auth = addUser();
+        var grabbedAuth = aService.getAuth(auth.authToken());
+
+        assertEquals(auth, grabbedAuth);
+    }
+
+    @Test
+    void getAuthFail() throws DataAccessException {
+        var auth = addUser();
+        var grabbedAuth = aService.getAuth(auth.authToken() + "badStuff");
+
+        assertNotEquals(auth, grabbedAuth);
+    }
+
     AuthData addUser() throws DataAccessException{
         var user = new UserData("john doe", "password", "example@mail.com");
         return uService.register(user);
