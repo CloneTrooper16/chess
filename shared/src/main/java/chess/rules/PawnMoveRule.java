@@ -19,10 +19,7 @@ public class PawnMoveRule extends BaseMoveRule{
             if (emptySquare) {
                 //square is empty
                 if (movesToBackRow(newPos)) {
-                    moves.add(new ChessMove(pos, newPos, ChessPiece.PieceType.QUEEN));
-                    moves.add(new ChessMove(pos, newPos, ChessPiece.PieceType.ROOK));
-                    moves.add(new ChessMove(pos, newPos, ChessPiece.PieceType.BISHOP));
-                    moves.add(new ChessMove(pos, newPos, ChessPiece.PieceType.KNIGHT));
+                    addBackRowMoves(moves, pos, newPos);
                 } else {
                     moves.add(new ChessMove(pos, newPos));
                 }
@@ -53,10 +50,7 @@ public class PawnMoveRule extends BaseMoveRule{
                     boolean samePieceColor = isSameColor(board, pos, newPos);
                     if (!samePieceColor) {
                         if (movesToBackRow(newPos)) {
-                            moves.add(new ChessMove(pos, newPos, ChessPiece.PieceType.QUEEN));
-                            moves.add(new ChessMove(pos, newPos, ChessPiece.PieceType.ROOK));
-                            moves.add(new ChessMove(pos, newPos, ChessPiece.PieceType.BISHOP));
-                            moves.add(new ChessMove(pos, newPos, ChessPiece.PieceType.KNIGHT));
+                            addBackRowMoves(moves, pos, newPos);
                         } else {
                             moves.add(new ChessMove(pos, newPos));
                         }
@@ -85,5 +79,12 @@ public class PawnMoveRule extends BaseMoveRule{
         }
         calculateMoves(board, position, direction, moves, firstMove);
         return moves;
+    }
+
+    private void addBackRowMoves(Collection<ChessMove> moves, ChessPosition pos, ChessPosition newPos) {
+        moves.add(new ChessMove(pos, newPos, ChessPiece.PieceType.QUEEN));
+        moves.add(new ChessMove(pos, newPos, ChessPiece.PieceType.ROOK));
+        moves.add(new ChessMove(pos, newPos, ChessPiece.PieceType.BISHOP));
+        moves.add(new ChessMove(pos, newPos, ChessPiece.PieceType.KNIGHT));
     }
 }
