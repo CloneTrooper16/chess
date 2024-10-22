@@ -14,11 +14,6 @@ import java.util.Map;
 public class ChessBoard {
     private final Map<ChessPosition, ChessPiece> pieces;
     private final Map<ChessPiece, ChessPosition> positions;
-//    private boolean whiteARookMoved = false;
-//    private boolean whiteHRookMoved = false;
-//    private boolean blackARookMoved = false;
-//    private boolean blackHRookMoved = false;
-
 
     public ChessBoard() {
         pieces = new HashMap<>();
@@ -153,12 +148,5 @@ public class ChessBoard {
         addPiece(new ChessPosition(8,6), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP));
         addPiece(new ChessPosition(8,7), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT));
         addPiece(new ChessPosition(8,8), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK));
-
-//        whiteARookMoved = false;
-//        whiteHRookMoved = false;
-//        whiteKingMoved = false;
-//        blackARookMoved = false;
-//        blackHRookMoved = false;
-//        blackKingMoved = false;
     }
 }

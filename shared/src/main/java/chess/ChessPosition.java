@@ -14,12 +14,6 @@ public class ChessPosition {
         this.col = col;
     }
 
-    //copy constructor
-//    public ChessPosition(ChessPosition other) {
-//        this.row = other.row;
-//        this.col = other.col;
-//    }
-
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -56,12 +50,4 @@ public class ChessPosition {
     public int getColumn() {
         return col;
     }
-
-//    public void setRow(int row) {
-//        this.row = row;
-//    }
-//
-//    public void setCol(int col) {
-//        this.col = col;
-//    }
 }
