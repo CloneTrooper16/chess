@@ -73,7 +73,8 @@ public class FIDERuleBook extends RuleBook{
         }
     }
 
-    private Collection<ChessMove> getEnPassantMove(ChessGame.TeamColor color, Collection<ChessMove> pawnMoves, ChessPosition pawnPosition, ChessBoard board) {
+    private Collection<ChessMove> getEnPassantMove(ChessGame.TeamColor color, Collection<ChessMove> pawnMoves,
+                                                   ChessPosition pawnPosition, ChessBoard board) {
         if (color == ChessGame.TeamColor.WHITE) {
             return getEnPassantOptions(ChessGame.TeamColor.WHITE, pawnMoves, pawnPosition, board);
         } else {
@@ -169,7 +170,8 @@ public class FIDERuleBook extends RuleBook{
         return realMoves;
     }
 
-    private Collection<ChessMove> getEnPassantOptions(ChessGame.TeamColor color, Collection<ChessMove> pawnMoves, ChessPosition pawnPos, ChessBoard board) {
+    private Collection<ChessMove> getEnPassantOptions(ChessGame.TeamColor color, Collection<ChessMove> pawnMoves,
+                                                      ChessPosition pawnPos, ChessBoard board) {
         Collection<ChessMove> result = new HashSet<>();
         MadeMove lastMove = moveHistory.getLastMove();
         if (lastMove != null) {

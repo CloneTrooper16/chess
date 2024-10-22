@@ -139,7 +139,8 @@ public class ServiceTests {
     void joinGameFail() throws DataAccessException {
         var auth = addUser();
         int id = createTestGame(auth);
-        assertThrows(DataAccessException.class, ()-> GAME_SERVICE.joinGame(auth.authToken() + "badStuff", new Handler.JoinGameRequest(ChessGame.TeamColor.WHITE, id)));
+        var joinGameRequest = new Handler.JoinGameRequest(ChessGame.TeamColor.WHITE, id);
+        assertThrows(DataAccessException.class, ()-> GAME_SERVICE.joinGame(auth.authToken() + "badStuff", joinGameRequest));
     }
 
     @Test
