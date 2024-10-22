@@ -11,7 +11,6 @@ public class PawnMoveRule extends BaseMoveRule{
                                   Collection<ChessMove> moves, boolean firstMove) {
         //Moves
         boolean moveAvailable = true;
-//            ChessPosition newPos = new ChessPosition(pos);
         int[] moveToPosition = {pos.getRow() + direction, pos.getColumn()};
         while(moveAvailable) {
             ChessPosition newPos = new ChessPosition(moveToPosition[0], moveToPosition[1]);
