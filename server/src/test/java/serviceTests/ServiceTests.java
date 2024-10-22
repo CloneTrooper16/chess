@@ -5,15 +5,17 @@ import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import service.AuthService;
+import service.GameService;
 import service.UserService;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static service.AuthService.generateToken;
 
-public class UserServiceTests {
+public class ServiceTests {
     private static final AuthDAO authDataAccess = new MemoryAuthDAO();
     static final UserService uService = new UserService(new MemoryUserDAO(), authDataAccess);
     static final AuthService aService = new AuthService(authDataAccess);
+    static final GameService gService = new GameService(new MemoryGameDAO(), authDataAccess);
 
     @BeforeEach
     void clear() throws DataAccessException {
@@ -78,5 +80,15 @@ public class UserServiceTests {
         var badUser = new UserData("john doe", "badPassword", null);
 
         assertThrows(DataAccessException.class, () -> uService.login(badUser));
+    }
+
+    @Test
+    void createGame() throws DataAccessException {
+        var user = new UserData("john doe", "password", "example@mail.com");
+        var auth = uService.register(user);
+
+        var id = gService.createGame(auth.authToken(), "gameName");
+
+        assertEquals(1, id); //TODO: change this to listgames when written;
     }
 }
