@@ -3,6 +3,7 @@ package handler;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.*;
+import model.GameData;
 import model.UserData;
 import service.AuthService;
 import service.GameService;
@@ -10,7 +11,9 @@ import service.UserService;
 import spark.Request;
 import spark.Response;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Handler {
@@ -25,6 +28,13 @@ public class Handler {
         this.userService = new UserService(userDataAccess, authDataAccess);
         this.authService = new AuthService(authDataAccess);
         this.gameService = new GameService(gameDataAccess, authDataAccess);
+    }
+
+    public Object listGames(Request req, Response res) throws DataAccessException {
+        var auth = new Gson().fromJson(req.headers("authorization"), String.class);
+        Collection<GameData> games = gameService.listGames(auth);
+        ListGamesResponse listGamesResponse = new ListGamesResponse(games);
+        return new Gson().toJson(listGamesResponse);
     }
 
     public Object registerUser(Request req, Response res) throws DataAccessException {
@@ -50,7 +60,7 @@ public class Handler {
     }
 
     public Object joinGame(Request req, Response res) throws DataAccessException {
-        var auth = new Gson().fromJson(req.headers("authorization"), String.class);
+        String auth = req.headers("authorization");
         JoinGameRequest joinGameRequest = new Gson().fromJson(req.body(), JoinGameRequest.class);
         gameService.joinGame(auth, joinGameRequest);
 
@@ -66,6 +76,7 @@ public class Handler {
     public Object deleteDB(Request req, Response res) throws DataAccessException {
         userService.deleteAllUsers();
         authService.deleteAllAuths();
+        gameService.deleteAllGames();
         return new Gson().toJson(new Object());
     }
 
@@ -86,4 +97,5 @@ public class Handler {
 
     public record CreateGameRequest(String gameName) {}
     public record JoinGameRequest(ChessGame.TeamColor playerColor, int gameID) {}
+    record ListGamesResponse(Collection<GameData> games) {}
 }

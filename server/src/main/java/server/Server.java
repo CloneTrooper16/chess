@@ -19,7 +19,7 @@ public class Server {
         Spark.staticFiles.location("web");
 
         // Register your endpoints and handle exceptions here.
-//        Spark.get("/game", this::listGames);
+        Spark.get("/game", handler::listGames);
 
         Spark.post("/user", handler::registerUser);
         Spark.post("/session", handler::loginUser);

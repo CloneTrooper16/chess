@@ -8,6 +8,8 @@ import handler.Handler;
 import model.AuthData;
 import model.GameData;
 
+import java.util.Collection;
+
 public class GameService {
     private final GameDAO gameDataAccess;
     private final AuthDAO authDataAccess;
@@ -45,6 +47,13 @@ public class GameService {
         throw new DataAccessException("unauthorized");
     }
 
+    public Collection<GameData> listGames(String authToken) throws DataAccessException{
+        if (isValidAuth(authToken)) {
+            return gameDataAccess.listGames();
+        }
+        throw new DataAccessException("unauthorized");
+    }
+
     private boolean isValidAuth(String authToken) throws DataAccessException {
         return authDataAccess.getAuth(authToken) != null;
     }
@@ -73,5 +82,9 @@ public class GameService {
             return new GameData(gameData.gameID(), username, gameData.blackUsername(), gameData.gameName(), gameData.game());
         }
         return new GameData(gameData.gameID(), gameData.whiteUsername(), username, gameData.gameName(), gameData.game());
+    }
+
+    public void deleteAllGames() throws DataAccessException {
+        gameDataAccess.clear();
     }
 }

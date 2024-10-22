@@ -21,8 +21,12 @@ public class MemoryGameDAO implements GameDAO{
         return games.get(gameID);
     }
 
-    public Collection<GameData> listGames(String authToken) throws DataAccessException {
-        return new HashSet<GameData>();
+    public Collection<GameData> listGames() throws DataAccessException {
+        HashSet<GameData> allGames = new HashSet<>();
+        for (Integer id : games.keySet()) {
+            allGames.add(games.get(id));
+        }
+        return allGames;
     }
 
     public void updateGame(int gameID, GameData gameData) throws DataAccessException {
@@ -30,6 +34,6 @@ public class MemoryGameDAO implements GameDAO{
     }
 
     public void clear() throws DataAccessException {
-
+        games.clear();
     }
 }
