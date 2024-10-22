@@ -1,5 +1,6 @@
 package handler;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.*;
 import model.UserData;
@@ -39,7 +40,7 @@ public class Handler {
     }
 
     public Object createGame(Request req, Response res) throws DataAccessException {
-        var auth =  new Gson().fromJson(req.headers("authorization"), String.class);
+        var auth = new Gson().fromJson(req.headers("authorization"), String.class);
         CreateGameRequest createGameRequest = new Gson().fromJson(req.body(), CreateGameRequest.class);
         int gameID = gameService.createGame(auth, createGameRequest.gameName);
         Map<String, Integer> jsonMap = new HashMap<>();
@@ -49,7 +50,7 @@ public class Handler {
     }
 
     public Object joinGame(Request req, Response res) throws DataAccessException {
-        var auth =  new Gson().fromJson(req.headers("authorization"), String.class);
+        var auth = new Gson().fromJson(req.headers("authorization"), String.class);
         JoinGameRequest joinGameRequest = new Gson().fromJson(req.body(), JoinGameRequest.class);
         gameService.joinGame(auth, joinGameRequest);
 
@@ -57,7 +58,7 @@ public class Handler {
     }
 
     public Object logoutUser(Request req, Response res) throws DataAccessException {
-        var auth =  new Gson().fromJson(req.headers("authorization"), String.class);
+        var auth = new Gson().fromJson(req.headers("authorization"), String.class);
         authService.logout(auth);
         return new Gson().toJson(new Object());
     }
@@ -84,5 +85,5 @@ public class Handler {
     }
 
     public record CreateGameRequest(String gameName) {}
-    public record JoinGameRequest(String playerColor, int gameID) {}
+    public record JoinGameRequest(ChessGame.TeamColor playerColor, int gameID) {}
 }

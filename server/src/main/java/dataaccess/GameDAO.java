@@ -8,7 +8,7 @@ public interface GameDAO {
     GameData createGame(String gameName) throws DataAccessException;
     GameData getGame(int gameID) throws DataAccessException;
     Collection<GameData> listGames(String authToken) throws DataAccessException;
-    GameData updateGame(String authToken, int gameID) throws DataAccessException;
+    void updateGame(int gameID, GameData gameData) throws DataAccessException;
 
     void clear() throws DataAccessException;
 }

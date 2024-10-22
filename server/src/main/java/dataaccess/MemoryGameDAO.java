@@ -25,8 +25,8 @@ public class MemoryGameDAO implements GameDAO{
         return new HashSet<GameData>();
     }
 
-    public GameData updateGame(String authToken, int gameID) throws DataAccessException {
-        return new GameData(1, "w", "b", "test", new ChessGame());
+    public void updateGame(int gameID, GameData gameData) throws DataAccessException {
+        games.put(gameID, gameData);
     }
 
     public void clear() throws DataAccessException {
