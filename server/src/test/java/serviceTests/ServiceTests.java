@@ -11,8 +11,6 @@ import service.AuthService;
 import service.GameService;
 import service.UserService;
 
-import javax.xml.crypto.Data;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static service.AuthService.generateToken;
 
@@ -145,6 +143,20 @@ public class ServiceTests {
         var auth = addUser();
         int id = createTestGame(auth);
         assertThrows(DataAccessException.class, ()-> gService.joinGame(auth.authToken() + "badStuff", new Handler.JoinGameRequest(ChessGame.TeamColor.WHITE, id)));
+    }
+
+    @Test
+    void listGames() throws DataAccessException {
+        var auth = addUser();
+        createTestGame(auth);
+        assertDoesNotThrow(()-> gService.listGames(auth.authToken()));
+    }
+
+    @Test
+    void listGamesFail() throws DataAccessException {
+        var auth = addUser();
+        createTestGame(auth);
+        assertThrows(DataAccessException.class, ()-> gService.listGames(auth.authToken() + "badStuff"));
     }
 
     AuthData addUser() throws DataAccessException{
