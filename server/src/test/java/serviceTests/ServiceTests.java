@@ -1,6 +1,7 @@
 package serviceTests;
 
 import dataaccess.*;
+import model.AuthData;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,25 +38,21 @@ public class ServiceTests {
     @Test
     void noDuplicateUsers() throws DataAccessException {
         var user = new UserData("john doe", "password", "example@mail.com");
-        var auth = uService.register(user);
+        uService.register(user);
 
         assertThrows(DataAccessException.class, () -> uService.register(user));
     }
 
     @Test
     void logout() throws DataAccessException {
-        var user = new UserData("john doe", "password", "example@mail.com");
-        var auth = uService.register(user);
+        var auth = addUser();
 
         assertDoesNotThrow(() -> aService.logout(auth.authToken()));
     }
 
     @Test
     void logoutFail() throws DataAccessException {
-        var user = new UserData("john doe", "password", "example@mail.com");
-        var auth = uService.register(user);
-
-//        uService.logout(auth);
+        addUser();
 
         assertThrows(DataAccessException.class, () -> aService.logout(generateToken()));
     }
@@ -73,8 +70,7 @@ public class ServiceTests {
 
     @Test
     void loginFail() throws DataAccessException {
-        var user = new UserData("john doe", "password", "example@mail.com");
-        var auth = uService.register(user);
+        var auth = addUser();
         aService.logout(auth.authToken());
 
         var badUser = new UserData("john doe", "badPassword", null);
@@ -84,11 +80,23 @@ public class ServiceTests {
 
     @Test
     void createGame() throws DataAccessException {
-        var user = new UserData("john doe", "password", "example@mail.com");
-        var auth = uService.register(user);
+        var auth = addUser();
 
         var id = gService.createGame(auth.authToken(), "gameName");
 
-        assertEquals(1, id); //TODO: change this to listgames when written;
+        assertEquals(1, id); //maybe change this to listGames when written;
+    }
+
+    @Test
+    void createGameFail() throws DataAccessException {
+        var auth = addUser();
+        assertThrows(DataAccessException.class, () -> gService.createGame(auth.authToken() + "badStuff", "name"));
+    }
+
+
+
+    AuthData addUser() throws DataAccessException{
+        var user = new UserData("john doe", "password", "example@mail.com");
+        return uService.register(user);
     }
 }
