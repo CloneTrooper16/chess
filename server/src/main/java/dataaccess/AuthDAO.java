@@ -10,6 +10,3 @@ public interface AuthDAO {
 
     void deleteAllAuths() throws DataAccessException;
 }
-
-//TODO: make a DB access part
-//TODO: make a commit
