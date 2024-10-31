@@ -12,3 +12,4 @@ public interface AuthDAO {
 }
 
 //TODO: make a DB access part
+//TODO: make a commit
