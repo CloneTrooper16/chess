@@ -9,7 +9,6 @@ public interface GameDAO {
     GameData getGame(int gameID) throws ServerException;
     Collection<GameData> listGames() throws ServerException;
     void updateGame(int gameID, GameData gameData) throws ServerException;
-    int getNextID();
 
     void clear() throws ServerException;
 }
