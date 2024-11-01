@@ -1,13 +1,7 @@
 package server;
 
-import com.google.gson.Gson;
-import dataaccess.DataAccessException;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryUserDAO;
+import dataaccess.ServerException;
 import handler.Handler;
-import model.UserData;
-import service.AuthService;
-import service.UserService;
 import spark.*;
 
 public class Server {
@@ -30,7 +24,7 @@ public class Server {
         Spark.delete("/session", handler::logoutUser);
         Spark.delete("/db", handler::deleteDB);
 
-        Spark.exception(DataAccessException.class, handler::exceptionHandler);
+        Spark.exception(ServerException.class, handler::exceptionHandler);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();

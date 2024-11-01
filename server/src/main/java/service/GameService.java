@@ -2,10 +2,9 @@ package service;
 
 import chess.ChessGame;
 import dataaccess.AuthDAO;
-import dataaccess.DataAccessException;
+import dataaccess.ServerException;
 import dataaccess.GameDAO;
 import handler.Handler;
-import model.AuthData;
 import model.GameData;
 
 import java.util.Collection;
@@ -20,15 +19,15 @@ public class GameService {
         this.authDataAccess = authDataAccess;
     }
 
-    public int createGame(String authToken, String gameName) throws DataAccessException {
+    public int createGame(String authToken, String gameName) throws ServerException {
         if (isValidAuth(authToken)) {
             var game = gameDataAccess.createGame(gameName);
             return game.gameID();
         }
-        throw new DataAccessException("unauthorized");
+        throw new ServerException("unauthorized");
     }
 
-    public void joinGame(String authToken, Handler.JoinGameRequest joinGameRequest) throws DataAccessException {
+    public void joinGame(String authToken, Handler.JoinGameRequest joinGameRequest) throws ServerException {
         if (isValidAuth(authToken)) {
             if (isValidGameID(joinGameRequest.gameID())) {
                 GameData gameData = getGame(joinGameRequest.gameID());
@@ -39,30 +38,30 @@ public class GameService {
                         gameDataAccess.updateGame(gameData.gameID(), newGame);
                         return;
                     }
-                    throw new DataAccessException("already taken");
+                    throw new ServerException("already taken");
                 }
             }
-            throw new DataAccessException("bad request");
+            throw new ServerException("bad request");
         }
-        throw new DataAccessException("unauthorized");
+        throw new ServerException("unauthorized");
     }
 
-    public Collection<GameData> listGames(String authToken) throws DataAccessException{
+    public Collection<GameData> listGames(String authToken) throws ServerException {
         if (isValidAuth(authToken)) {
             return gameDataAccess.listGames();
         }
-        throw new DataAccessException("unauthorized");
+        throw new ServerException("unauthorized");
     }
 
-    private boolean isValidAuth(String authToken) throws DataAccessException {
+    private boolean isValidAuth(String authToken) throws ServerException {
         return authDataAccess.getAuth(authToken) != null;
     }
 
-    private GameData getGame(int gameID) throws DataAccessException {
+    private GameData getGame(int gameID) throws ServerException {
         return gameDataAccess.getGame(gameID);
     }
 
-    private boolean isValidGameID(int gameID) throws DataAccessException {
+    private boolean isValidGameID(int gameID) throws ServerException {
         return gameDataAccess.getGame(gameID) != null;
     }
 
@@ -84,7 +83,7 @@ public class GameService {
         return new GameData(gameData.gameID(), gameData.whiteUsername(), username, gameData.gameName(), gameData.game());
     }
 
-    public void deleteAllGames() throws DataAccessException {
+    public void deleteAllGames() throws ServerException {
         gameDataAccess.clear();
     }
 

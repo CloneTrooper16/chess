@@ -2,7 +2,7 @@ package service;
 
 import dataaccess.AuthDAO;
 import dataaccess.UserDAO;
-import dataaccess.DataAccessException;
+import dataaccess.ServerException;
 import model.AuthData;
 import model.UserData;
 
@@ -14,19 +14,19 @@ public class UserService {
         this.userDataAccess = userDataAccess;
         this.authDataAccess = authDataAccess;
     }
-    public AuthData register(UserData user) throws DataAccessException {
+    public AuthData register(UserData user) throws ServerException {
         if (userDataAccess.getUser(user.username()) != null) {
-            throw new DataAccessException("already taken");
+            throw new ServerException("already taken");
         }
         if (user.password() == null || user.password().isEmpty()) {
-            throw new DataAccessException("bad request");
+            throw new ServerException("bad request");
         }
         var newUser = userDataAccess.addUser(user);
         String authToken = AuthService.generateToken();
         AuthData newAuth = new AuthData(authToken, newUser.username());
         return authDataAccess.addAuth(newAuth);
     }
-    public AuthData login(UserData user) throws DataAccessException {
+    public AuthData login(UserData user) throws ServerException {
         var userInfo = getUser(user.username());
         if (userInfo != null) {
             if (user.password().equals(userInfo.password())) {
@@ -35,14 +35,14 @@ public class UserService {
                 return authDataAccess.addAuth(newAuth);
             }
         }
-        throw new DataAccessException("unauthorized");
+        throw new ServerException("unauthorized");
     }
 
-    public UserData getUser(String username) throws DataAccessException {
+    public UserData getUser(String username) throws ServerException {
         return userDataAccess.getUser(username);
     }
 
-    public void deleteAllUsers() throws DataAccessException {
+    public void deleteAllUsers() throws ServerException {
         userDataAccess.deleteAllUsers();
     }
 }

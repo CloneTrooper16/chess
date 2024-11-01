@@ -1,8 +1,7 @@
 package service;
 
 import dataaccess.AuthDAO;
-import dataaccess.DataAccessException;
-import dataaccess.UserDAO;
+import dataaccess.ServerException;
 import model.AuthData;
 
 import java.util.UUID;
@@ -14,20 +13,20 @@ public class AuthService {
         this.authDataAccess = authDataAccess;
     }
 
-    public AuthData getAuth(String authToken) throws DataAccessException {
+    public AuthData getAuth(String authToken) throws ServerException {
         return authDataAccess.getAuth(authToken);
     }
 
-    public void logout(String authToken) throws DataAccessException {
+    public void logout(String authToken) throws ServerException {
         if (isValidAuth(authToken)) {
             var auth = getAuth(authToken);
             authDataAccess.deleteAuth(auth);
         } else {
-            throw new DataAccessException("unauthorized");
+            throw new ServerException("unauthorized");
         }
     }
 
-    public void deleteAllAuths() throws DataAccessException {
+    public void deleteAllAuths() throws ServerException {
         authDataAccess.deleteAllAuths();
     }
 
@@ -35,7 +34,7 @@ public class AuthService {
         return UUID.randomUUID().toString();
     }
 
-    private boolean isValidAuth(String authToken) throws DataAccessException {
+    private boolean isValidAuth(String authToken) throws ServerException {
         return authDataAccess.getAuth(authToken) != null;
     }
 

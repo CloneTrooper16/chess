@@ -18,13 +18,13 @@ public class ServiceTests {
     static final GameService GAME_SERVICE = new GameService(new MemoryGameDAO(), AUTH_DATA_ACCESS);
 
     @BeforeEach
-    void clear() throws DataAccessException {
+    void clear() throws ServerException {
         USER_SERVICE.deleteAllUsers();
         AUTH_SERVICE.deleteAllAuths();
     }
 
     @Test
-    void register() throws DataAccessException {
+    void register() throws ServerException {
         var user = new UserData("john doe", "password", "example@mail.com");
         var auth = USER_SERVICE.register(user);
 
@@ -35,29 +35,29 @@ public class ServiceTests {
     }
 
     @Test
-    void noDuplicateUsers() throws DataAccessException {
+    void noDuplicateUsers() throws ServerException {
         var user = new UserData("john doe", "password", "example@mail.com");
         USER_SERVICE.register(user);
 
-        assertThrows(DataAccessException.class, () -> USER_SERVICE.register(user));
+        assertThrows(ServerException.class, () -> USER_SERVICE.register(user));
     }
 
     @Test
-    void logout() throws DataAccessException {
+    void logout() throws ServerException {
         var auth = addUser();
 
         assertDoesNotThrow(() -> AUTH_SERVICE.logout(auth.authToken()));
     }
 
     @Test
-    void logoutFail() throws DataAccessException {
+    void logoutFail() throws ServerException {
         addUser();
 
-        assertThrows(DataAccessException.class, () -> AUTH_SERVICE.logout(generateToken()));
+        assertThrows(ServerException.class, () -> AUTH_SERVICE.logout(generateToken()));
     }
 
     @Test
-    void login() throws DataAccessException {
+    void login() throws ServerException {
         var user = new UserData("john doe", "password", "example@mail.com");
         var auth = USER_SERVICE.register(user);
         AUTH_SERVICE.logout(auth.authToken());
@@ -68,17 +68,17 @@ public class ServiceTests {
     }
 
     @Test
-    void loginFail() throws DataAccessException {
+    void loginFail() throws ServerException {
         var auth = addUser();
         AUTH_SERVICE.logout(auth.authToken());
 
         var badUser = new UserData("john doe", "badPassword", null);
 
-        assertThrows(DataAccessException.class, () -> USER_SERVICE.login(badUser));
+        assertThrows(ServerException.class, () -> USER_SERVICE.login(badUser));
     }
 
     @Test
-    void createGame() throws DataAccessException {
+    void createGame() throws ServerException {
         var auth = addUser();
         int expectedID = GAME_SERVICE.getNextID();
         var id = GAME_SERVICE.createGame(auth.authToken(), "gameName");
@@ -87,13 +87,13 @@ public class ServiceTests {
     }
 
     @Test
-    void createGameFail() throws DataAccessException {
+    void createGameFail() throws ServerException {
         var auth = addUser();
-        assertThrows(DataAccessException.class, () -> GAME_SERVICE.createGame(auth.authToken() + "badStuff", "name"));
+        assertThrows(ServerException.class, () -> GAME_SERVICE.createGame(auth.authToken() + "badStuff", "name"));
     }
 
     @Test
-    void getUser() throws DataAccessException {
+    void getUser() throws ServerException {
         var user = new UserData("john doe", "password", "example@mail.com");
         USER_SERVICE.register(user);
 
@@ -103,7 +103,7 @@ public class ServiceTests {
     }
 
     @Test
-    void getUserFail() throws DataAccessException {
+    void getUserFail() throws ServerException {
         var user = new UserData("john doe", "password", "example@mail.com");
         USER_SERVICE.register(user);
 
@@ -113,7 +113,7 @@ public class ServiceTests {
     }
 
     @Test
-    void getAuth() throws DataAccessException {
+    void getAuth() throws ServerException {
         var auth = addUser();
         var grabbedAuth = AUTH_SERVICE.getAuth(auth.authToken());
 
@@ -121,7 +121,7 @@ public class ServiceTests {
     }
 
     @Test
-    void getAuthFail() throws DataAccessException {
+    void getAuthFail() throws ServerException {
         var auth = addUser();
         var grabbedAuth = AUTH_SERVICE.getAuth(auth.authToken() + "badStuff");
 
@@ -129,40 +129,40 @@ public class ServiceTests {
     }
 
     @Test
-    void joinGame() throws DataAccessException {
+    void joinGame() throws ServerException {
         var auth = addUser();
         int id = createTestGame(auth);
         assertDoesNotThrow(()-> GAME_SERVICE.joinGame(auth.authToken(), new Handler.JoinGameRequest(ChessGame.TeamColor.WHITE, id)));
     }
 
     @Test
-    void joinGameFail() throws DataAccessException {
+    void joinGameFail() throws ServerException {
         var auth = addUser();
         int id = createTestGame(auth);
         var joinGameRequest = new Handler.JoinGameRequest(ChessGame.TeamColor.WHITE, id);
-        assertThrows(DataAccessException.class, ()-> GAME_SERVICE.joinGame(auth.authToken() + "badStuff", joinGameRequest));
+        assertThrows(ServerException.class, ()-> GAME_SERVICE.joinGame(auth.authToken() + "badStuff", joinGameRequest));
     }
 
     @Test
-    void listGames() throws DataAccessException {
+    void listGames() throws ServerException {
         var auth = addUser();
         createTestGame(auth);
         assertDoesNotThrow(()-> GAME_SERVICE.listGames(auth.authToken()));
     }
 
     @Test
-    void listGamesFail() throws DataAccessException {
+    void listGamesFail() throws ServerException {
         var auth = addUser();
         createTestGame(auth);
-        assertThrows(DataAccessException.class, ()-> GAME_SERVICE.listGames(auth.authToken() + "badStuff"));
+        assertThrows(ServerException.class, ()-> GAME_SERVICE.listGames(auth.authToken() + "badStuff"));
     }
 
-    AuthData addUser() throws DataAccessException{
+    AuthData addUser() throws ServerException {
         var user = new UserData("john doe", "password", "example@mail.com");
         return USER_SERVICE.register(user);
     }
 
-    int createTestGame(AuthData auth) throws DataAccessException {
+    int createTestGame(AuthData auth) throws ServerException {
         return GAME_SERVICE.createGame(auth.authToken(), "gameName");
     }
 }
