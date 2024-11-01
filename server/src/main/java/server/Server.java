@@ -5,7 +5,15 @@ import handler.Handler;
 import spark.*;
 
 public class Server {
-    private final Handler handler = new Handler();
+    private final Handler handler;
+
+    public Server() {
+        try {
+            handler = new Handler();
+        } catch (ServerException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);

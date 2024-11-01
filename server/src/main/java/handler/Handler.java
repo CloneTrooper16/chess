@@ -11,6 +11,7 @@ import service.UserService;
 import spark.Request;
 import spark.Response;
 
+import javax.xml.crypto.Data;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,10 +21,10 @@ public class Handler {
     private final AuthService authService;
     private final GameService gameService;
 
-    public Handler() {
-        UserDAO userDataAccess = new MemoryUserDAO();
-        AuthDAO authDataAccess = new MemoryAuthDAO();
-        GameDAO gameDataAccess = new MemoryGameDAO();
+    public Handler() throws ServerException {
+        UserDAO userDataAccess = new DatabaseUserDAO();
+        AuthDAO authDataAccess = new DatabaseAuthDAO();
+        GameDAO gameDataAccess = new DatabaseGameDAO();
         this.userService = new UserService(userDataAccess, authDataAccess);
         this.authService = new AuthService(authDataAccess);
         this.gameService = new GameService(gameDataAccess, authDataAccess);
@@ -84,6 +85,8 @@ public class Handler {
             res.status(403);
         } else if (ex.getMessage().equals("unauthorized")) {
             res.status(401);
+        } else if (ex.getMessage().startsWith("Unable")) {
+            res.status(500);
         } else {
             res.status(400);
         }

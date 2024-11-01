@@ -11,4 +11,6 @@ public interface GameDAO {
     void updateGame(int gameID, GameData gameData) throws ServerException;
 
     void clear() throws ServerException;
+
+    int getNextID();
 }

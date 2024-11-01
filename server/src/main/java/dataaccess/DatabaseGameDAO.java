@@ -26,4 +26,8 @@ public class DatabaseGameDAO implements GameDAO {
     public void clear() throws DataAccessException {
 
     }
+
+    public int getNextID() {
+        return 1;
+    }
 }
