@@ -1,15 +1,20 @@
 package dataaccess;
 
 import chess.ChessGame;
-import com.google.gson.Gson;
+import chess.ChessPiece;
+import chess.ChessPosition;
+import chess.rulebook.FIDERuleBook;
+import chess.rulebook.RuleBook;
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
 import model.GameData;
 import model.UserData;
 
 import javax.xml.crypto.Data;
+import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
@@ -29,7 +34,7 @@ public class DatabaseGameDAO implements GameDAO {
 
     public GameData getGame(int gameID) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT gameID, white_username, black_username, game_name, json FROM games WHERE gameID=?";
+            var statement = "SELECT id, white_username, black_username, game_name, json FROM games WHERE id=?";
             try (var chess = conn.prepareStatement(statement)) {
                 chess.setInt(1, gameID);
                 try (var rs = chess.executeQuery()) {
@@ -45,7 +50,20 @@ public class DatabaseGameDAO implements GameDAO {
     }
 
     public Collection<GameData> listGames() throws DataAccessException {
-        return new HashSet<GameData>();
+        var result = new ArrayList<GameData>();
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT id, white_username, black_username, game_name, json FROM games";
+            try (var ps = conn.prepareStatement(statement)) {
+                try (var rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        result.add(readGame(rs));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()));
+        }
+        return result;
     }
 
     public void updateGame(int gameID, GameData gameData) throws DataAccessException {
@@ -61,12 +79,20 @@ public class DatabaseGameDAO implements GameDAO {
     }
 
     private GameData readGame(ResultSet rs) throws SQLException {
-        var gameID = rs.getInt("gameID");
+        var gameID = rs.getInt("id");
         var white_username = rs.getString("white_username");
         var black_username = rs.getString("black_username");
         var game_name = rs.getString("game_name");
         var jsonString = rs.getString("json");
-        ChessGame game = new Gson().fromJson(jsonString, ChessGame.class);
+
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(ChessPosition.class, new ChessPositionDeserializer())
+                .registerTypeAdapter(ChessPiece.class, new ChessPieceDeserializer())
+                .registerTypeAdapter(new TypeToken<Map<ChessPosition, ChessPiece>>() {}.getType(), new CustomPieceMapDeserializer())
+                .registerTypeAdapter(new TypeToken<Map<ChessPiece, ChessPosition>>() {}.getType(), new CustomPositionMapDeserializer())
+                .registerTypeAdapter(RuleBook.class, new RuleBookInstanceCreator())
+                .create();
+        ChessGame game = gson.fromJson(jsonString, ChessGame.class);
         return new GameData(gameID, white_username, black_username, game_name, game);
     }
 
@@ -108,6 +134,79 @@ public class DatabaseGameDAO implements GameDAO {
             }
         } catch (SQLException e) {
             throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
+        }
+    }
+
+    private static class ChessPositionDeserializer implements JsonDeserializer<ChessPosition> {
+        @Override
+        public ChessPosition deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            if (json.isJsonPrimitive() && json.getAsJsonPrimitive().isString()) {
+                // Parse the JSON string with fromString method
+                return ChessPosition.fromString(json.getAsString());
+            } else if (json.isJsonObject()) {
+                JsonObject jsonObject = json.getAsJsonObject();
+                int row = jsonObject.get("row").getAsInt();
+                int col = jsonObject.get("col").getAsInt();
+                return new ChessPosition(row, col);
+            }
+            else {
+                throw new JsonParseException("Expected a string for ChessPosition, but got: " + json);
+            }
+        }
+    }
+    private static class ChessPieceDeserializer implements JsonDeserializer<ChessPiece> {
+        @Override
+        public ChessPiece deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            if (json.isJsonPrimitive() && json.getAsJsonPrimitive().isString()) {
+                // Parse the JSON string with fromString method
+                return ChessPiece.fromString(json.getAsString());
+            } else if (json.isJsonObject()) {
+                // Deserialize from a JSON object format, e.g., {"type":"PAWN","color":"WHITE"}
+                JsonObject jsonObject = json.getAsJsonObject();
+                ChessPiece.PieceType type = ChessPiece.PieceType.valueOf(jsonObject.get("type").getAsString().toUpperCase());
+                ChessGame.TeamColor color = ChessGame.TeamColor.valueOf(jsonObject.get("color").getAsString().toUpperCase());
+                return new ChessPiece(color, type);
+            } else {
+                throw new JsonParseException("Expected a string for ChessPiece, but got: " + json);
+            }
+        }
+    }
+    private static class CustomPieceMapDeserializer implements JsonDeserializer<Map<ChessPosition, ChessPiece>> {
+        @Override
+        public Map<ChessPosition, ChessPiece> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
+            Map<ChessPosition, ChessPiece> map = new HashMap<>();
+            JsonObject jsonObject = json.getAsJsonObject();
+
+            for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
+                ChessPosition position = ChessPosition.fromString(entry.getKey());
+                ChessPiece piece = context.deserialize(entry.getValue(), ChessPiece.class);
+                map.put(position, piece);
+            }
+
+            return map;
+        }
+    }
+
+    private static class CustomPositionMapDeserializer implements JsonDeserializer<Map<ChessPiece, ChessPosition>> {
+        @Override
+        public Map<ChessPiece, ChessPosition> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
+            Map<ChessPiece, ChessPosition> map = new HashMap<>();
+            JsonObject jsonObject = json.getAsJsonObject();
+
+            for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
+                ChessPiece piece = ChessPiece.fromString(entry.getKey());
+                ChessPosition position = context.deserialize(entry.getValue(), ChessPosition.class);
+                map.put(piece, position);
+            }
+
+            return map;
+        }
+    }
+
+    public class RuleBookInstanceCreator implements InstanceCreator<RuleBook> {
+        @Override
+        public RuleBook createInstance(Type type) {
+            return new FIDERuleBook(); // Return an instance of your concrete class
         }
     }
 }

@@ -1,9 +1,12 @@
 package chess;
 
 import chess.rules.Rules;
+import com.google.gson.Gson;
 
 import java.util.Collection;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Represents a single chess piece
@@ -64,6 +67,31 @@ public class ChessPiece {
             result = result.toLowerCase();
         }
         return result;
+    }
+
+    public static ChessPiece fromString(String piece) {
+        if (piece.length() == 1) {
+            ChessGame.TeamColor color = ChessGame.TeamColor.WHITE;
+            PieceType type = PieceType.KING;
+            try {
+                if (piece.toLowerCase().equals(piece)) {
+                    color = ChessGame.TeamColor.BLACK;
+                }
+                switch (piece.toLowerCase()) {
+                    case "k" -> type = PieceType.KING;
+                    case "q" -> type = PieceType.QUEEN;
+                    case "b" -> type = PieceType.BISHOP;
+                    case "n" -> type = PieceType.KNIGHT;
+                    case "r" -> type = PieceType.ROOK;
+                    case "p" -> type = PieceType.PAWN;
+                }
+                return new ChessPiece(color, type);
+            } catch (Error e) {
+                throw new IllegalArgumentException("Invalid format: " + piece);
+            }
+        } else {
+            return new Gson().fromJson(piece, ChessPiece.class);
+        }
     }
 
     /**

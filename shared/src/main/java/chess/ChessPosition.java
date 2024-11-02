@@ -1,5 +1,8 @@
 package chess;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Represents a single square position on a chess board
  * <p>
@@ -33,10 +36,22 @@ public class ChessPosition {
 
     @Override
     public String toString() {
-        return "{" +
-                "row=" + row +
-                ", col=" + col +
-                '}';
+        return "(" +
+                "row-" + row +
+                ", col-" + col +
+                ")";
+    }
+
+    public static ChessPosition fromString(String positionString) {
+        try {
+            positionString = positionString.replaceAll("[()]", "").trim();
+            String[] parts = positionString.split(", ");
+            int row = Integer.parseInt(parts[0].split("-")[1]); // Get the second part after "row-"
+            int col = Integer.parseInt(parts[1].split("-")[1]); // Get the second part after "col-"
+            return new ChessPosition(row, col);
+        } catch(Error e) {
+            throw new IllegalArgumentException("Invalid format: " + positionString);
+        }
     }
 
     /**

@@ -21,6 +21,9 @@ public class FIDERuleBook extends RuleBook{
         this.board = board;
     }
 
+    public FIDERuleBook() {
+    }
+
     public void getAllMoves(ChessBoard board) {
         getAllMovesByColor(ChessGame.TeamColor.WHITE, board);
         getAllMovesByColor(ChessGame.TeamColor.BLACK, board);
