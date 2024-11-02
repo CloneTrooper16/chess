@@ -21,6 +21,9 @@ public class MemoryAuthDAO implements AuthDAO {
     }
 
 //Guess I didn't need the getAuthByUserName
+    public AuthData getAuthByUsername(String username) {
+        return authsbyUsername.get(username);
+    }
 
     public void deleteAuth(AuthData a) {
         auths.remove(a.authToken());

@@ -37,6 +37,24 @@ public class DatabaseAuthDAO implements AuthDAO {
         }
         return null;
     }
+
+    public AuthData getAuthByUsername(String username) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT username, authToken FROM auths WHERE username=?";
+            try (var chess = conn.prepareStatement(statement)) {
+                chess.setString(1, username);
+                try (var rs = chess.executeQuery()) {
+                    if (rs.next()) {
+                        return readAuth(rs);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()));
+        }
+        return null;
+    }
+
     public void deleteAuth(AuthData authData) throws DataAccessException {
         var statement = "DELETE FROM auths WHERE authToken=?";
         executeUpdate(statement, authData.authToken());
@@ -56,10 +74,11 @@ public class DatabaseAuthDAO implements AuthDAO {
         """
         CREATE TABLE IF NOT EXISTS auths (
           `id` int NOT NULL AUTO_INCREMENT,
-          `username` varchar(256) NOT NULL,
+          `username` varchar(256) UNIQUE NOT NULL,
           `authToken` varchar(256) NOT NULL,
           PRIMARY KEY (`id`),
-          INDEX(authToken)
+          INDEX(authToken),
+          INDEX(username)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
         """
     };
