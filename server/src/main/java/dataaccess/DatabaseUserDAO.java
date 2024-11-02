@@ -1,8 +1,8 @@
 package dataaccess;
 
-import com.google.gson.Gson;
-import model.AuthData;
+
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,7 +17,8 @@ public class DatabaseUserDAO implements UserDAO {
 
     public UserData addUser(UserData u) throws DataAccessException {
         var statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
-        var id = executeUpdate(statement, u.username(), u.password(), u.email()); //TODO: bcrypt this.
+        var hash = hashPassword(u.password());
+        var id = executeUpdate(statement, u.username(), hash, u.email());
         return new UserData(u.username(), u.password(), u.email());
     }
     public UserData getUser(String username) throws DataAccessException {
@@ -87,5 +88,9 @@ public class DatabaseUserDAO implements UserDAO {
         } catch (SQLException e) {
             throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
         }
+    }
+
+    private String hashPassword(String password) {
+        return BCrypt.hashpw(password, BCrypt.gensalt());
     }
 }
