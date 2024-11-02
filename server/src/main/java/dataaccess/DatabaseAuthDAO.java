@@ -11,13 +11,12 @@ import static java.sql.Types.NULL;
 
 public class DatabaseAuthDAO implements AuthDAO {
     public DatabaseAuthDAO() throws ServerException {
-        configureDatabase();
+        DatabaseManager.configureDatabase(createStatements);
     }
 
     public AuthData addAuth(AuthData a) throws DataAccessException {
-        var statement = "INSERT INTO auths (name, type, json) VALUES (?, ?, ?)";
-        var json = new Gson().toJson(a);
-        var id = executeUpdate(statement, a.username(), a.authToken(), json);
+        var statement = "INSERT INTO auths (username, authToken) VALUES (?, ?)";
+        var id = executeUpdate(statement, a.username(), a.authToken());
         return new AuthData(a.authToken(), a.username());
     }
     public AuthData getAuth(String authToken) throws DataAccessException {
@@ -69,18 +68,4 @@ public class DatabaseAuthDAO implements AuthDAO {
             throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
         }
     }
-
-    private void configureDatabase() throws ServerException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            throw new ServerException(String.format("Unable to configure database: %s", ex.getMessage()));
-        }
-    }
-
 }
