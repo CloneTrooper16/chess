@@ -2,8 +2,10 @@ package dataaccess;
 
 import com.google.gson.Gson;
 import model.AuthData;
+import model.UserData;
 import server.Server;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
@@ -20,14 +22,34 @@ public class DatabaseAuthDAO implements AuthDAO {
         return new AuthData(a.authToken(), a.username());
     }
     public AuthData getAuth(String authToken) throws DataAccessException {
-        return new AuthData("token", "user");
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT username, authToken FROM auths WHERE authToken=?";
+            try (var chess = conn.prepareStatement(statement)) {
+                chess.setString(1, authToken);
+                try (var rs = chess.executeQuery()) {
+                    if (rs.next()) {
+                        return readAuth(rs);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()));
+        }
+        return null;
     }
     public void deleteAuth(AuthData authData) throws DataAccessException {
-
+        var statement = "DELETE FROM auths WHERE authToken=?";
+        executeUpdate(statement, authData.authToken());
     }
 
     public void deleteAllAuths() throws DataAccessException {
 
+    }
+
+    private AuthData readAuth(ResultSet rs) throws SQLException {
+        var username = rs.getString("username");
+        var authToken = rs.getString("authToken");
+        return new AuthData(authToken, username);
     }
 
     private final String[] createStatements = {
