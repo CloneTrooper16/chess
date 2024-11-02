@@ -31,10 +31,6 @@ public class UserService {
         var userInfo = getUser(user.username());
         if (userInfo != null) {
             AuthData auth = authDataAccess.getAuthByUsername(user.username());
-            boolean alreadyLoggedIn = auth != null;
-//            if (alreadyLoggedIn) {
-//                authDataAccess.deleteAuth(auth);
-//            }
             if (BCrypt.checkpw(user.password(), userInfo.password())) {
                 String authToken = AuthService.generateToken();
                 AuthData newAuth = new AuthData(authToken, user.username());
