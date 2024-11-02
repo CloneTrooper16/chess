@@ -67,7 +67,7 @@ public class DataAccessTests {
 
     @Test
     void getUser() throws ServerException {
-        var user = new UserData("john doe", "password", "example@mail.com");
+        var user = new UserData("john Steven doe2", "password3", "example@mail.com");
         var userInfo = USER_DATA_ACCESS.addUser(user);
 
         var madeUser = USER_DATA_ACCESS.getUser(userInfo.username());
@@ -76,7 +76,7 @@ public class DataAccessTests {
 
     @Test
     void getUserFail() throws ServerException {
-        var user = new UserData("john doe", "password", "example@mail.com");
+        var user = new UserData("john doe5", "password1testing", "example@mail.com");
         var userInfo = USER_DATA_ACCESS.addUser(user);
 
         var madeUser = USER_DATA_ACCESS.getUser(userInfo.username() + "badstuff");
@@ -84,7 +84,7 @@ public class DataAccessTests {
     }
 
     @Test
-    void DeleteAllUsers() throws ServerException {
+    void deleteAllUsers() throws ServerException {
         var user = new UserData("john doe", "password", "example@mail.com");
         var userInfo = USER_DATA_ACCESS.addUser(user);
 
@@ -114,7 +114,7 @@ public class DataAccessTests {
 
     @Test
     void getAuth() throws ServerException {
-        var auth = new AuthData("token", "username");
+        var auth = new AuthData("tokentokentoken", "usernamedname");
         var authInfo = AUTH_DATA_ACCESS.addAuth(auth);
 
         var madeAuth = AUTH_DATA_ACCESS.getAuth(authInfo.authToken());
@@ -193,7 +193,7 @@ public class DataAccessTests {
 
     @Test
     void createGameFail() throws ServerException {
-        var user = new UserData("john doe", "password", "example@mail.com");
+        var user = new UserData("john doe done gone", "passwordtest", "example@mail.net");
         var userInfo = USER_DATA_ACCESS.addUser(user);
 
         var gameID = GAME_DATA_ACCESS.createGame("test");
@@ -202,55 +202,55 @@ public class DataAccessTests {
 
     @Test
     void listGames() throws ServerException {
-        var user = new UserData("john doe", "password", "example@mail.com");
+        var user = new UserData("john joseph", "password", "example@mail.com");
         var userInfo = USER_DATA_ACCESS.addUser(user);
 
-        var gameID = GAME_DATA_ACCESS.createGame("test");
+        var gameID = GAME_DATA_ACCESS.createGame("rutabaga");
         assertNotNull(gameID);
     }
 
     @Test
     void listGamesFail() throws ServerException {
-        var user = new UserData("john doe", "password", "example@mail.com");
+        var user = new UserData("john doe testing 123", "password lolz", "example@mail.com");
         var userInfo = USER_DATA_ACCESS.addUser(user);
 
-        var gameID = GAME_DATA_ACCESS.createGame("test");
+        var gameID = GAME_DATA_ACCESS.createGame("right");
         assertNotNull(gameID);
     }
 
     @Test
     void getGame() throws ServerException {
-        var user = new UserData("john doe", "password", "example@mail.com");
+        var user = new UserData("john doe test", "password12345", "example@mail.com");
         var userInfo = USER_DATA_ACCESS.addUser(user);
 
-        var gameID = GAME_DATA_ACCESS.createGame("test");
+        var gameID = GAME_DATA_ACCESS.createGame("left");
         assertNotNull(gameID);
     }
 
     @Test
     void getGameFail() throws ServerException {
-        var user = new UserData("john doe", "password", "example@mail.com");
+        var user = new UserData("doe john", "wordpass", "example@mail.com");
         var userInfo = USER_DATA_ACCESS.addUser(user);
 
-        var gameID = GAME_DATA_ACCESS.createGame("test");
+        var gameID = GAME_DATA_ACCESS.createGame("tset");
         assertNotNull(gameID);
     }
 
     @Test
     void updateGame() throws ServerException {
-        var user = new UserData("john doe", "password", "example@mail.com");
+        var user = new UserData("john doeI'mdown", "passwordhelp", "example@mail.com");
         var userInfo = USER_DATA_ACCESS.addUser(user);
 
-        var gameID = GAME_DATA_ACCESS.createGame("test");
+        var gameID = GAME_DATA_ACCESS.createGame("forwards");
         assertNotNull(gameID);
     }
 
     @Test
     void updateGameFail() throws ServerException {
-        var user = new UserData("john doe", "password", "example@mail.com");
+        var user = new UserData("john doeFail", "passwordFail", "example@mail.com");
         var userInfo = USER_DATA_ACCESS.addUser(user);
 
-        var gameID = GAME_DATA_ACCESS.createGame("test");
+        var gameID = GAME_DATA_ACCESS.createGame("backwards");
         assertNotNull(gameID);
     }
 }
