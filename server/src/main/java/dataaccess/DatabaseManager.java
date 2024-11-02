@@ -3,6 +3,9 @@ package dataaccess;
 import java.sql.*;
 import java.util.Properties;
 
+import static java.sql.Statement.RETURN_GENERATED_KEYS;
+import static java.sql.Types.NULL;
+
 public class DatabaseManager {
     private static final String DATABASE_NAME;
     private static final String USER;
@@ -80,6 +83,33 @@ public class DatabaseManager {
             }
         } catch (SQLException ex) {
             throw new ServerException(String.format("Unable to configure database: %s", ex.getMessage()));
+        }
+    }
+
+    static int executeUpdate(String statement, Object... params) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var chess = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
+                for (var i = 0; i < params.length; i++) {
+                    var param = params[i];
+                    switch (param) {
+                        case String p -> chess.setString(i + 1, p);
+                        case Integer p -> chess.setInt(i + 1, p);
+                        case null -> chess.setNull(i + 1, NULL);
+                        default -> {
+                        }
+                    }
+                }
+                chess.executeUpdate();
+
+                var rs = chess.getGeneratedKeys();
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+
+                return 0;
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
         }
     }
 }

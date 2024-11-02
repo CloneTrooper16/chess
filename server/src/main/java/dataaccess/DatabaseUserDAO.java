@@ -65,30 +65,7 @@ public class DatabaseUserDAO implements UserDAO {
     };
 
     private int executeUpdate(String statement, Object... params) throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var chess = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
-                for (var i = 0; i < params.length; i++) {
-                    var param = params[i];
-                    switch (param) {
-                        case String p -> chess.setString(i + 1, p);
-                        case Integer p -> chess.setInt(i + 1, p);
-                        case null -> chess.setNull(i + 1, NULL);
-                        default -> {
-                        }
-                    }
-                }
-                chess.executeUpdate();
-
-                var rs = chess.getGeneratedKeys();
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-
-                return 0;
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
-        }
+        return DatabaseManager.executeUpdate(statement, params);
     }
 
     private String hashPassword(String password) {
