@@ -73,7 +73,8 @@ public class DatabaseGameDAO implements GameDAO {
     }
 
     public void clear() throws DataAccessException {
-
+        var statement = "TRUNCATE games";
+        executeUpdate(statement);
     }
 
     public int getNextID() {

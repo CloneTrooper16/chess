@@ -39,7 +39,8 @@ public class DatabaseUserDAO implements UserDAO {
     }
 
     public void deleteAllUsers() throws DataAccessException {
-
+        var statement = "TRUNCATE users";
+        executeUpdate(statement);
     }
 
     private UserData readUser(ResultSet rs) throws SQLException {

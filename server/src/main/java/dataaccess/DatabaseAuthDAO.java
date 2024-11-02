@@ -61,7 +61,8 @@ public class DatabaseAuthDAO implements AuthDAO {
     }
 
     public void deleteAllAuths() throws DataAccessException {
-
+        var statement = "TRUNCATE auths";
+        executeUpdate(statement);
     }
 
     private AuthData readAuth(ResultSet rs) throws SQLException {

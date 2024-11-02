@@ -32,14 +32,13 @@ public class UserService {
         if (userInfo != null) {
             AuthData auth = authDataAccess.getAuthByUsername(user.username());
             boolean alreadyLoggedIn = auth != null;
-            if (!alreadyLoggedIn) {
-                if (BCrypt.checkpw(user.password(), userInfo.password())) {
-                    String authToken = AuthService.generateToken();
-                    AuthData newAuth = new AuthData(authToken, user.username());
-                    return authDataAccess.addAuth(newAuth);
-                }
-            } else {
-                return auth;
+            if (alreadyLoggedIn) {
+                authDataAccess.deleteAuth(auth);
+            }
+            if (BCrypt.checkpw(user.password(), userInfo.password())) {
+                String authToken = AuthService.generateToken();
+                AuthData newAuth = new AuthData(authToken, user.username());
+                return authDataAccess.addAuth(newAuth);
             }
         }
         throw new ServerException("unauthorized");
