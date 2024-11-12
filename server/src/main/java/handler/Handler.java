@@ -3,8 +3,7 @@ package handler;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.*;
-import model.GameData;
-import model.UserData;
+import model.*;
 import service.AuthService;
 import service.GameService;
 import service.UserService;
@@ -34,7 +33,8 @@ public class Handler {
         var auth = new Gson().fromJson(req.headers("authorization"), String.class);
         Collection<GameData> games = gameService.listGames(auth);
         ListGamesResponse listGamesResponse = new ListGamesResponse(games);
-        return new Gson().toJson(listGamesResponse);
+        String json = new Gson().toJson(listGamesResponse);
+        return json;
     }
 
     public Object registerUser(Request req, Response res) throws ServerException {
@@ -52,11 +52,9 @@ public class Handler {
     public Object createGame(Request req, Response res) throws ServerException {
         var auth = new Gson().fromJson(req.headers("authorization"), String.class);
         CreateGameRequest createGameRequest = new Gson().fromJson(req.body(), CreateGameRequest.class);
-        int gameID = gameService.createGame(auth, createGameRequest.gameName);
-        Map<String, Integer> jsonMap = new HashMap<>();
-        jsonMap.put("gameID", gameID);
-
-        return new Gson().toJson(jsonMap);
+        int gameID = gameService.createGame(auth, createGameRequest.gameName());
+        CreateGameResponse createGameResponse = new CreateGameResponse(gameID);
+        return new Gson().toJson(createGameResponse);
     }
 
     public Object joinGame(Request req, Response res) throws ServerException {
@@ -97,7 +95,7 @@ public class Handler {
         res.body( new Gson().toJson(jsonMap));
     }
 
-    public record CreateGameRequest(String gameName) {}
-    public record JoinGameRequest(ChessGame.TeamColor playerColor, int gameID) {}
-    record ListGamesResponse(Collection<GameData> games) {}
+
+
+
 }
