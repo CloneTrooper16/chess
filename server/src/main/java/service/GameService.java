@@ -6,6 +6,7 @@ import dataaccess.ServerException;
 import dataaccess.GameDAO;
 import handler.Handler;
 import model.GameData;
+import model.JoinGameRequest;
 
 import java.util.Collection;
 
@@ -27,7 +28,7 @@ public class GameService {
         throw new ServerException("unauthorized");
     }
 
-    public void joinGame(String authToken, Handler.JoinGameRequest joinGameRequest) throws ServerException {
+    public void joinGame(String authToken, JoinGameRequest joinGameRequest) throws ServerException {
         if (isValidAuth(authToken)) {
             if (isValidGameID(joinGameRequest.gameID())) {
                 GameData gameData = getGame(joinGameRequest.gameID());
