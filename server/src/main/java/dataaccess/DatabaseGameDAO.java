@@ -6,18 +6,14 @@ import chess.ChessPosition;
 import chess.rulebook.FIDERuleBook;
 import chess.rulebook.RuleBook;
 import com.google.gson.*;
-import com.google.gson.reflect.TypeToken;
 import model.GameData;
-import model.UserData;
+import deserializer.ChessDeserializer;
 
-import javax.xml.crypto.Data;
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.sql.Types.NULL;
 
 public class DatabaseGameDAO implements GameDAO {
     public DatabaseGameDAO() throws ServerException {
@@ -88,13 +84,7 @@ public class DatabaseGameDAO implements GameDAO {
         var gameName = rs.getString("game_name");
         var jsonString = rs.getString("json");
 
-        Gson gson = new GsonBuilder()
-                .registerTypeAdapter(ChessPosition.class, new ChessPositionDeserializer())
-                .registerTypeAdapter(ChessPiece.class, new ChessPieceDeserializer())
-                .registerTypeAdapter(new TypeToken<Map<ChessPosition, ChessPiece>>() {}.getType(), new CustomPieceMapDeserializer())
-                .registerTypeAdapter(new TypeToken<Map<ChessPiece, ChessPosition>>() {}.getType(), new CustomPositionMapDeserializer())
-                .registerTypeAdapter(RuleBook.class, new RuleBookInstanceCreator())
-                .create();
+        Gson gson = new ChessDeserializer().createChessGson();
         ChessGame game = gson.fromJson(jsonString, ChessGame.class);
         return new GameData(gameID, whiteUsername, blackUsername, gameName, game);
     }
