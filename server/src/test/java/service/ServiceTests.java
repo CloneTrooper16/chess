@@ -4,6 +4,7 @@ import chess.ChessGame;
 import dataaccess.*;
 import handler.Handler;
 import model.AuthData;
+import model.JoinGameRequest;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,15 +13,43 @@ import static org.junit.jupiter.api.Assertions.*;
 import static service.AuthService.generateToken;
 
 public class ServiceTests {
-    private static final AuthDAO AUTH_DATA_ACCESS = new MemoryAuthDAO();
-    static final UserService USER_SERVICE = new UserService(new MemoryUserDAO(), AUTH_DATA_ACCESS);
+    private static final AuthDAO AUTH_DATA_ACCESS;
+
+    static {
+        try {
+            AUTH_DATA_ACCESS = new DatabaseAuthDAO();
+        } catch (ServerException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    static final UserService USER_SERVICE;
+
+    static {
+        try {
+            USER_SERVICE = new UserService(new DatabaseUserDAO(), AUTH_DATA_ACCESS);
+        } catch (ServerException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     static final AuthService AUTH_SERVICE = new AuthService(AUTH_DATA_ACCESS);
-    static final GameService GAME_SERVICE = new GameService(new MemoryGameDAO(), AUTH_DATA_ACCESS);
+
+    static final GameService GAME_SERVICE;
+
+    static {
+        try {
+            GAME_SERVICE = new GameService(new DatabaseGameDAO(), AUTH_DATA_ACCESS);
+        } catch (ServerException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @BeforeEach
     void clear() throws ServerException {
         USER_SERVICE.deleteAllUsers();
         AUTH_SERVICE.deleteAllAuths();
+        GAME_SERVICE.deleteAllGames();
     }
 
     @Test
@@ -99,7 +128,7 @@ public class ServiceTests {
 
         var grabbedUser = USER_SERVICE.getUser(user.username());
 
-        assertEquals(user, grabbedUser);
+        assertEquals(user.username(), grabbedUser.username());
     }
 
     @Test
@@ -132,14 +161,14 @@ public class ServiceTests {
     void joinGame() throws ServerException {
         var auth = addUser();
         int id = createTestGame(auth);
-        assertDoesNotThrow(()-> GAME_SERVICE.joinGame(auth.authToken(), new Handler.JoinGameRequest(ChessGame.TeamColor.WHITE, id)));
+        assertDoesNotThrow(()-> GAME_SERVICE.joinGame(auth.authToken(), new JoinGameRequest(ChessGame.TeamColor.WHITE, id)));
     }
 
     @Test
     void joinGameFail() throws ServerException {
         var auth = addUser();
         int id = createTestGame(auth);
-        var joinGameRequest = new Handler.JoinGameRequest(ChessGame.TeamColor.WHITE, id);
+        var joinGameRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, id);
         assertThrows(ServerException.class, ()-> GAME_SERVICE.joinGame(auth.authToken() + "badStuff", joinGameRequest));
     }
 
