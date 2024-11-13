@@ -6,6 +6,8 @@ import model.UserData;
 import server.ServerFacade;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static ui.EscapeSequences.*;
 
@@ -15,6 +17,7 @@ public class ChessClient {
     private final ServerFacade server;
     private final String serverUrl;
     private State state = State.LOGGED_OUT;
+    private final Map<Integer, Integer> games = new HashMap<>();
 
     public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
@@ -31,8 +34,7 @@ public class ChessClient {
                 case "login" -> login(params);
                 case "logout" -> logout();
                 case "create" -> createGame(params);
-//                case "list" -> listPets();
-//                case "signout" -> signOut();
+                case "list" -> listGames();
 //                case "adopt" -> adoptPet(params);
 //                case "adoptall" -> adoptAllPets();
                 case "quit" -> "quit";
@@ -79,6 +81,27 @@ public class ChessClient {
             return String.format("Created game: %s", params[0]);
         }
         throw new ResponseException(400, "Expected: <name>");
+    }
+
+    public String listGames() throws ResponseException {
+        assertSignedIn();
+        var games = server.listGames(userAuth.authToken());
+        var result = new StringBuilder();
+        int i = 1;
+        this.games.clear();
+        for (var game : games.games()) {
+            result.append(i);
+            result.append(". ");
+            result.append(game.gameName());
+            result.append("\t\twhite: ");
+            result.append(game.whiteUsername() == null ? "no player" : game.whiteUsername());
+            result.append("\tblack: ");
+            result.append(game.blackUsername() == null ? "no player" : game.blackUsername());
+            result.append("\n");
+            this.games.put(i, game.gameID());
+            i++;
+        }
+        return result.toString();
     }
 
 //    public String rescuePet(String... params) throws ResponseException {
