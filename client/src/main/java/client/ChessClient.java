@@ -253,25 +253,7 @@ public class ChessClient {
                 result.append(EMPTY);
             } else {
                 String s = String.valueOf(c);
-                switch(s) {
-                    case "K" -> s = WHITE_KING;
-                    case "Q" -> s = WHITE_QUEEN;
-                    case "B" -> s = WHITE_BISHOP;
-                    case "N" -> s = WHITE_KNIGHT;
-                    case "P" -> s = WHITE_PAWN;
-                    case "R" -> s = WHITE_ROOK;
-                    case "k" -> s = BLACK_KING;
-                    case "q" -> s = BLACK_QUEEN;
-                    case "b" -> {
-                        if ((board.charAt(i+1) != 'c' && board.charAt(i+1) != 'a')) {
-                            s = BLACK_BISHOP;
-                        }
-                    }
-                    case "n" -> s = BLACK_KNIGHT;
-                    case "p" -> s = BLACK_PAWN;
-                    case "r" -> s = BLACK_ROOK;
-                    default -> s = s;
-                }
+                s = findChessUnicode(s, board, i);
                 result.append(s);
             }
             if (i < board.length() - 1) {
@@ -356,4 +338,28 @@ public class ChessClient {
         }
         return result.toString();
     }
+
+    private String findChessUnicode(String s, String board, int i) {
+        switch(s) {
+            case "K" -> s = WHITE_KING;
+            case "Q" -> s = WHITE_QUEEN;
+            case "B" -> s = WHITE_BISHOP;
+            case "N" -> s = WHITE_KNIGHT;
+            case "P" -> s = WHITE_PAWN;
+            case "R" -> s = WHITE_ROOK;
+            case "k" -> s = BLACK_KING;
+            case "q" -> s = BLACK_QUEEN;
+            case "b" -> {
+                if ((board.charAt(i + 1) != 'c' && board.charAt(i + 1) != 'a')) {
+                    s = BLACK_BISHOP;
+                }
+            }
+            case "n" -> s = BLACK_KNIGHT;
+            case "p" -> s = BLACK_PAWN;
+            case "r" -> s = BLACK_ROOK;
+            default -> s = s;
+        }
+        return s;
+    }
+
 }
