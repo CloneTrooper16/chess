@@ -5,7 +5,6 @@ import exception.ResponseException;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
-import org.w3c.dom.ls.LSInput;
 import server.ServerFacade;
 
 import java.util.*;
