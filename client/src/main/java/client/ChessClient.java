@@ -95,8 +95,17 @@ public class ChessClient {
             result.append(i);
             result.append(". ");
             result.append(game.gameName());
+            if (game.gameName().length() < 5) {
+                result.append("\t");
+            }
             result.append("\t\twhite: ");
             result.append(game.whiteUsername() == null ? "no player" : game.whiteUsername());
+            if (game.whiteUsername() != null && game.whiteUsername().length() < 9) {
+                result.append("\t");
+            }
+            if (game.whiteUsername() != null && game.whiteUsername().length() < 5) {
+                result.append("\t");
+            }
             result.append("\tblack: ");
             result.append(game.blackUsername() == null ? "no player" : game.blackUsername());
             result.append("\n");
@@ -113,9 +122,9 @@ public class ChessClient {
                 return "Please list games first";
             }
             else if (isValidGameID(params[0])) {
-                if (!(params[1].equals("WHITE") || params[1].equals("BLACK"))) {
+                if (!(params[1].equals("white") || params[1].equals("black"))) {
                     throw new ResponseException(400, "Invalid player color");
-                } else if (params[1].equals("WHITE")) {
+                } else if (params[1].equals("white")) {
                     server.joinGame(userAuth.authToken(), ChessGame.TeamColor.WHITE, Integer.parseInt(params[0]));
                 } else {
                     server.joinGame(userAuth.authToken(), ChessGame.TeamColor.BLACK, Integer.parseInt(params[0]));
