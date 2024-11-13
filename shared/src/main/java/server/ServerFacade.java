@@ -70,7 +70,8 @@ public class ServerFacade {
         this.makeRequest("DELETE", path, null, null, null);
     }
 
-    private <T> T makeRequest(String method, String path, Map<String, String> headers, Object request, Class<T> responseClass) throws ResponseException {
+    private <T> T makeRequest(String method, String path, Map<String, String> headers,
+                              Object request, Class<T> responseClass) throws ResponseException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
