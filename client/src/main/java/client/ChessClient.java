@@ -334,10 +334,11 @@ public class ChessClient {
             result.append("\n");
             i--;
         }
-        result.append("_abcdefgh_\n");
+        result.append("_");
+        result.append(fullWidthCharacter("abcdefgh"));
+        result.append("_\n");
         return result.toString();
     }
-
     private boolean nextSquareOnBoard(char curr, char next) {
         if (Character.isDigit(curr) && next != '\n') {
             return true;
