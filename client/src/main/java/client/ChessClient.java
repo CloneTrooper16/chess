@@ -5,7 +5,7 @@ import exception.ResponseException;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
-import server.ServerFacade;
+import facade.ServerFacade;
 
 import java.util.*;
 
