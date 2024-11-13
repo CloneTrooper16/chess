@@ -3,13 +3,12 @@ package client;
 import chess.ChessGame;
 import exception.ResponseException;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
+import org.w3c.dom.ls.LSInput;
 import server.ServerFacade;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static ui.EscapeSequences.*;
 
@@ -19,7 +18,7 @@ public class ChessClient {
     private final ServerFacade server;
     private final String serverUrl;
     private State state = State.LOGGED_OUT;
-    private final Map<Integer, Integer> games = new HashMap<>();
+    private final Map<Integer, GameData> games = new HashMap<>();
 
     public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
@@ -109,7 +108,7 @@ public class ChessClient {
             result.append("\tblack: ");
             result.append(game.blackUsername() == null ? "no player" : game.blackUsername());
             result.append("\n");
-            this.games.put(i, game.gameID());
+            this.games.put(i, game);
             i++;
         }
         return result.toString();
@@ -122,14 +121,19 @@ public class ChessClient {
                 return "Please list games first";
             }
             else if (isValidGameID(params[0])) {
+                int id = Integer.parseInt(params[0]);
+                var gameInfo = games.get(id);
+                int gameID = gameInfo.gameID();
+                String board = gameInfo.game().getBoard().toString();
                 if (!(params[1].equals("white") || params[1].equals("black"))) {
                     throw new ResponseException(400, "Invalid player color");
                 } else if (params[1].equals("white")) {
-                    server.joinGame(userAuth.authToken(), ChessGame.TeamColor.WHITE, Integer.parseInt(params[0]));
+                    server.joinGame(userAuth.authToken(), ChessGame.TeamColor.WHITE, gameID);
                 } else {
-                    server.joinGame(userAuth.authToken(), ChessGame.TeamColor.BLACK, Integer.parseInt(params[0]));
+                    server.joinGame(userAuth.authToken(), ChessGame.TeamColor.BLACK, gameID);
                 }
-                return String.format("joined game: %s", params[0]);
+
+                return printWhiteBlackBoards(board);
             }
             else {
                 throw new ResponseException(400, "Invalid game id");
@@ -141,12 +145,15 @@ public class ChessClient {
     public String observeGame(String... params) throws ResponseException {
         assertLoggedIn();
         if (params.length == 1) {
-//            int gameID = server.createGame(userAuth.authToken(), params[0]);
             if (games.isEmpty()) {
                 return "Please list games first";
             }
             else if (isValidGameID(params[0])) {
-                return String.format("Observing game: %s (Not implemented)", params[0]);
+                int id = Integer.parseInt(params[0]);
+                var gameInfo = games.get(id);
+                int gameID = gameInfo.gameID();
+                String board = gameInfo.game().getBoard().toString();
+                return printWhiteBlackBoards(board);
             }
             else {
                 throw new ResponseException(400, "Invalid game id");
@@ -154,28 +161,6 @@ public class ChessClient {
         }
         throw new ResponseException(400, "Expected: <id>");
     }
-
-//    public String rescuePet(String... params) throws ResponseException {
-//        assertLoggedIn();
-//        if (params.length >= 2) {
-//            var name = params[0];
-//            var type = PetType.valueOf(params[1].toUpperCase());
-//            var pet = new Pet(0, name, type);
-//            pet = server.addPet(pet);
-//            return String.format("You rescued %s. Assigned ID: %d", pet.name(), pet.id());
-//        }
-//        throw new ResponseException(400, "Expected: <name> <CAT|DOG|FROG>");
-//    }
-//    public String adoptAllPets() throws ResponseException {
-//        assertLoggedIn();
-//        var buffer = new StringBuilder();
-//        for (var pet : server.listPets()) {
-//            buffer.append(String.format("%s says %s%n", pet.name(), pet.sound()));
-//        }
-//
-//        server.deleteAllPets();
-//        return buffer.toString();
-
 
     public String help() {
         String primaryColor = SET_TEXT_COLOR_BLUE;
@@ -228,5 +213,147 @@ public class ChessClient {
             return false;
         }
         return false;
+    }
+
+    private String printWhiteBlackBoards(String blackBoard) {
+        String whiteBoard = reverseBoard(blackBoard);
+        whiteBoard = addBoardLetters(whiteBoard);
+        blackBoard = rotateBoard(whiteBoard);
+        return printboard(blackBoard) + "\n" + printboard(whiteBoard);
+    }
+
+    private String printboard(String board) {
+        String lightSquareColor = SET_BG_COLOR_WHITE;
+        String darkSquareColor = SET_BG_COLOR_DARK_GREY;
+        String lightPieceColor = SET_TEXT_COLOR_AQUA;
+        String darkPieceColor = SET_TEXT_COLOR_RED;
+        boolean lastFirstSquareLight = false;
+        boolean edgeSquare = true;
+        SquareColor currentSquareColor = SquareColor.LIGHT;
+        var result = new StringBuilder();
+        result.append(ERASE_SCREEN);
+        for (int i = 0; i < board.length(); i++) {
+            char c = board.charAt(i);
+            if (edgeSquare) {
+                result.append(SET_BG_COLOR_LIGHT_GREY);
+            } else if (currentSquareColor == SquareColor.LIGHT) {
+                result.append(lightSquareColor);
+            } else {
+                result.append(darkSquareColor);
+            }
+            if (Character.isLowerCase(c)) {
+                result.append(darkPieceColor);
+            } else {
+                result.append(lightPieceColor);
+            }
+            if (c == '\n') {
+                result.append(RESET_BG_COLOR);
+                result.append(c);
+            }
+            else if (c == '_') {
+                result.append(EMPTY);
+            } else {
+                String s = String.valueOf(c);
+                switch(s) {
+                    case "K" -> s = WHITE_KING;
+                    case "Q" -> s = WHITE_QUEEN;
+                    case "B" -> s = WHITE_BISHOP;
+                    case "N" -> s = WHITE_KNIGHT;
+                    case "P" -> s = WHITE_PAWN;
+                    case "R" -> s = WHITE_ROOK;
+                    case "k" -> s = BLACK_KING;
+                    case "q" -> s = BLACK_QUEEN;
+                    case "b" -> {
+                        if ((board.charAt(i+1) != 'c' && board.charAt(i+1) != 'a')) {
+                            s = BLACK_BISHOP;
+                        }
+                    }
+                    case "n" -> s = BLACK_KNIGHT;
+                    case "p" -> s = BLACK_PAWN;
+                    case "r" -> s = BLACK_ROOK;
+                    default -> s = s;
+                }
+                result.append(s);
+            }
+            if (i < board.length() - 1) {
+                if (nextSquareOnBoard(c, board.charAt(i+1)) && lastFirstSquareLight) {
+                    currentSquareColor = SquareColor.LIGHT;
+                    lastFirstSquareLight = false;
+                } else if (nextSquareOnBoard(c, board.charAt(i+1)) && !lastFirstSquareLight) {
+                    currentSquareColor = SquareColor.DARK;
+                    lastFirstSquareLight = true;
+                }
+                if (edgeSquare && nextSquareOnBoard(c, board.charAt(i+1))) {
+                    edgeSquare = false;
+                } else if (nextSquareOnEdge(board.charAt(i+1))) {
+                    edgeSquare = true;
+                }
+            }
+            if (!edgeSquare && currentSquareColor == SquareColor.LIGHT) {
+                currentSquareColor = SquareColor.DARK;
+            } else {
+                currentSquareColor = SquareColor.LIGHT;
+            }
+
+        }
+        result.append(RESET_BG_COLOR);
+        return result.toString();
+    }
+
+    private enum SquareColor{
+        LIGHT,
+        DARK,
+    }
+
+    private String rotateBoard(String board) {
+        String[] lines = board.split("\n");
+        for (int i = 0; i < lines.length; i++) {
+            lines[i] = new StringBuilder(lines[i]).reverse().toString();
+        }
+        Collections.reverse(Arrays.asList(lines));
+        return String.join("\n", lines);
+    }
+
+    private String reverseBoard(String board) {
+        String[] lines = board.split("\n");
+        Collections.reverse(Arrays.asList(lines));
+        return String.join("\n", lines);
+    }
+
+    private String addBoardLetters(String board) {
+        String[] lines = board.split("\n");
+        var result = new StringBuilder();
+        int i = 8;
+        result.append("_");
+        result.append(fullWidthCharacter("abcdefgh"));
+        result.append("_\n");
+        for (String line: lines) {
+            result.append(fullWidthCharacter(String.valueOf(i)));
+            result.append(line);
+            result.append(i);
+            result.append("\n");
+            i--;
+        }
+        result.append("_abcdefgh_\n");
+        return result.toString();
+    }
+
+    private boolean nextSquareOnBoard(char curr, char next) {
+        if (Character.isDigit(curr) && next != '\n') {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean nextSquareOnEdge(char next) {
+        return Character.isDigit(next);
+    }
+
+    private String fullWidthCharacter(String characters) {
+        var result = new StringBuilder();
+        for (char c : characters.toCharArray()) {
+            result.append((char) (c + 0xFEE0));
+        }
+        return result.toString();
     }
 }
