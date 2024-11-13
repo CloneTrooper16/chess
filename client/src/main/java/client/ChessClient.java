@@ -218,7 +218,7 @@ public class ChessClient {
         String whiteBoard = reverseBoard(blackBoard);
         whiteBoard = addBoardLetters(whiteBoard);
         blackBoard = rotateBoard(whiteBoard);
-        return printboard(blackBoard) + "\n" + printboard(whiteBoard);
+        return printboard(blackBoard) + "\n\n" + printboard(whiteBoard);
     }
 
     private String printboard(String board) {
@@ -233,14 +233,16 @@ public class ChessClient {
         result.append(ERASE_SCREEN);
         for (int i = 0; i < board.length(); i++) {
             char c = board.charAt(i);
-            if (edgeSquare) {
+            if (edgeSquare || c == ' ') {
                 result.append(SET_BG_COLOR_LIGHT_GREY);
             } else if (currentSquareColor == SquareColor.LIGHT) {
                 result.append(lightSquareColor);
             } else {
                 result.append(darkSquareColor);
             }
-            if (Character.isLowerCase(c)) {
+            if (edgeSquare) {
+                result.append(SET_TEXT_COLOR_MAGENTA);
+            } else if (Character.isLowerCase(c)) {
                 result.append(darkPieceColor);
             } else {
                 result.append(lightPieceColor);
@@ -257,16 +259,17 @@ public class ChessClient {
                 result.append(s);
             }
             if (i < board.length() - 1) {
-                if (nextSquareOnBoard(c, board.charAt(i+1)) && lastFirstSquareLight) {
-                    currentSquareColor = SquareColor.LIGHT;
-                    lastFirstSquareLight = false;
-                } else if (nextSquareOnBoard(c, board.charAt(i+1)) && !lastFirstSquareLight) {
+                var nextChar = findNextChar(c, board, i);
+                if (nextSquareOnBoard(c, nextChar) && lastFirstSquareLight) {
                     currentSquareColor = SquareColor.DARK;
+                    lastFirstSquareLight = false;
+                } else if (nextSquareOnBoard(c, nextChar) && !lastFirstSquareLight) {
+                    currentSquareColor = SquareColor.LIGHT;
                     lastFirstSquareLight = true;
                 }
-                if (edgeSquare && nextSquareOnBoard(c, board.charAt(i+1))) {
+                if (edgeSquare && nextSquareOnBoard(c, nextChar)) {
                     edgeSquare = false;
-                } else if (nextSquareOnEdge(board.charAt(i+1))) {
+                } else if (nextSquareOnEdge(nextChar)) {
                     edgeSquare = true;
                 }
             }
@@ -311,7 +314,7 @@ public class ChessClient {
         for (String line: lines) {
             result.append(fullWidthCharacter(String.valueOf(i)));
             result.append(line);
-            result.append(i);
+            result.append(fullWidthCharacter(String.valueOf(i)));
             result.append("\n");
             i--;
         }
@@ -334,7 +337,9 @@ public class ChessClient {
     private String fullWidthCharacter(String characters) {
         var result = new StringBuilder();
         for (char c : characters.toCharArray()) {
-            result.append((char) (c + 0xFEE0));
+            result.append(" ");
+            result.append(c);
+            result.append(" ");
         }
         return result.toString();
     }
@@ -350,7 +355,8 @@ public class ChessClient {
             case "k" -> s = BLACK_KING;
             case "q" -> s = BLACK_QUEEN;
             case "b" -> {
-                if ((board.charAt(i + 1) != 'c' && board.charAt(i + 1) != 'a')) {
+                char nextChar = findNextChar(s.charAt(0), board, i);
+                if ((nextChar != 'c' && nextChar != 'a')) {
                     s = BLACK_BISHOP;
                 }
             }
@@ -360,6 +366,19 @@ public class ChessClient {
             default -> s = s;
         }
         return s;
+    }
+
+    private char findNextChar(char c, String board, int i) {
+        int j = i + 1;
+        char res = 'i';
+        while (res == 'i') {
+            if (board.charAt(j) == ' ') {
+                j++;
+            } else {
+                res = board.charAt(j);
+            }
+        }
+        return res;
     }
 
 }
