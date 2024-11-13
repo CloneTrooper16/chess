@@ -57,9 +57,6 @@ public class ServerFacade {
         return this.makeRequest("GET", path, headers, null, ListGamesResponse.class);
     }
 
-//        var path = String.format("/pet/%s", id);
-//        this.makeRequest("DELETE", path, null, null);
-
     public void joinGame(String authToken, ChessGame.TeamColor playerColor, int gameID) throws ResponseException {
         var path = "/game";
         Map<String, String> headers = new HashMap<>();
@@ -71,14 +68,6 @@ public class ServerFacade {
     public void clear() throws ResponseException {
         var path = "/db";
         this.makeRequest("DELETE", path, null, null, null);
-    }
-
-    public GameData[] listPets() throws ResponseException {
-        var path = "/pet";
-        record listPetResponse(GameData[] pet) {
-        }
-        var response = this.makeRequest("GET", path, null, null, listPetResponse.class);
-        return response.pet();
     }
 
     private <T> T makeRequest(String method, String path, Map<String, String> headers, Object request, Class<T> responseClass) throws ResponseException {
