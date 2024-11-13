@@ -35,8 +35,8 @@ public class ChessClient {
                 case "logout" -> logout();
                 case "create" -> createGame(params);
                 case "list" -> listGames();
-//                case "adopt" -> adoptPet(params);
-//                case "adoptall" -> adoptAllPets();
+//                case "join" -> adoptPet(params);
+                case "observe" -> observeGame(params);
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -102,6 +102,25 @@ public class ChessClient {
             i++;
         }
         return result.toString();
+    }
+
+
+
+    public String observeGame(String... params) throws ResponseException {
+        assertSignedIn();
+        if (params.length == 1) {
+//            int gameID = server.createGame(userAuth.authToken(), params[0]);
+            if (games.isEmpty()) {
+                return "Please list games first";
+            }
+            else if (isValidGameID(params[0])) {
+                return String.format("Observing game: %s (Not implemented)", params[0]);
+            }
+            else {
+                throw new ResponseException(400, "Invalid game id");
+            }
+        }
+        throw new ResponseException(400, "Expected: <id>");
     }
 
 //    public String rescuePet(String... params) throws ResponseException {
@@ -208,5 +227,19 @@ public class ChessClient {
         if (state == State.LOGGED_OUT) {
             throw new ResponseException(400, "You must sign in");
         }
+    }
+
+    private boolean isValidGameID(String id) {
+        try {
+            int gameID = Integer.parseInt(id);
+            for (int gameNum : games.keySet()) {
+                if (gameNum == gameID) {
+                    return true;
+                }
+            }
+        } catch(Error e) {
+            return false;
+        }
+        return false;
     }
 }
