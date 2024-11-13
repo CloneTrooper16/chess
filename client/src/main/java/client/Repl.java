@@ -38,6 +38,6 @@ public class Repl {
 //    }
 
     private void printPrompt() {
-        System.out.print("\n" + RESET_TEXT_COLOR + "[" + client + "]>>> " + SET_TEXT_COLOR_GREEN);
+        System.out.print("\n" + RESET_TEXT_COLOR + "[" + client.getState() + "] >>> " + SET_TEXT_COLOR_GREEN);
     }
 }

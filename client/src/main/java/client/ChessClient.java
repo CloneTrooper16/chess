@@ -1,12 +1,10 @@
 package client;
 
-import com.google.gson.Gson;
 import exception.ResponseException;
 import model.AuthData;
 import model.UserData;
 import server.ServerFacade;
 
-import java.awt.desktop.AppReopenedEvent;
 import java.util.Arrays;
 
 import static ui.EscapeSequences.*;
@@ -16,7 +14,7 @@ public class ChessClient {
     private AuthData userAuth = null;
     private final ServerFacade server;
     private final String serverUrl;
-    private State state = State.SIGNED_OUT;
+    private State state = State.LOGGED_OUT;
 
     public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
@@ -49,7 +47,7 @@ public class ChessClient {
         if (params.length == 3) {
             UserData newUser = new UserData(params[0], params[1], params[2]);
             userAuth = server.register(newUser);
-            state = State.SIGNED_IN;
+            state = State.LOGGED_IN;
             userName = params[0];
             return String.format("You signed in as %s.", userName);
         }
@@ -60,7 +58,7 @@ public class ChessClient {
         if (params.length == 2) {
             UserData newUser = new UserData(params[0], params[1], null);
             userAuth = server.login(newUser);
-            state = State.SIGNED_IN;
+            state = State.LOGGED_IN;
             userName = params[0];
             return String.format("You signed in as %s.", userName);
         }
@@ -70,7 +68,7 @@ public class ChessClient {
     public String logout() throws ResponseException {
         assertSignedIn();
         server.logout(userAuth.authToken());
-        state = State.SIGNED_OUT;
+        state = State.LOGGED_OUT;
         return String.format("%s logged out. Goodbye!", userName);
     }
 
@@ -137,7 +135,7 @@ public class ChessClient {
 //        assertSignedIn();
 //        ws.leavePetShop(visitorName);
 //        ws = null;
-//        state = State.SIGNED_OUT;
+//        state = State.LOGGED_OUT;
 //        return String.format("%s left the shop", visitorName);
 //    }
 
@@ -153,7 +151,7 @@ public class ChessClient {
     public String help() {
         String primaryColor = SET_TEXT_COLOR_BLUE;
         String secondaryColor = SET_TEXT_COLOR_MAGENTA;
-        if (state == State.SIGNED_OUT) {
+        if (state == State.LOGGED_OUT) {
             return primaryColor + " - register <username> <password> <email>"
                     + secondaryColor + " - to create an account \n"
                     + primaryColor + " - login <username> <password>"
@@ -179,8 +177,12 @@ public class ChessClient {
                 + secondaryColor + " - displays this menu \n";
     }
 
+    public State getState() {
+        return state;
+    }
+
     private void assertSignedIn() throws ResponseException {
-        if (state == State.SIGNED_OUT) {
+        if (state == State.LOGGED_OUT) {
             throw new ResponseException(400, "You must sign in");
         }
     }
