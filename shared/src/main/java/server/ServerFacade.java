@@ -117,7 +117,13 @@ public class ServerFacade {
     private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
         var status = http.getResponseCode();
         if (!isSuccessful(status)) {
-            throw new ResponseException(status, "failure: " + status);
+            String msg = "failure: " + status;
+            if (status == 401) {
+                msg = "Invalid username or password";
+            } else if (status == 403) {
+                msg = "Already taken";
+            }
+            throw new ResponseException(status, msg);
         }
     }
 

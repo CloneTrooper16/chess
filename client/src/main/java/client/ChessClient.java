@@ -224,7 +224,7 @@ public class ChessClient {
                     return true;
                 }
             }
-        } catch(Error e) {
+        } catch(Exception e) {
             return false;
         }
         return false;
