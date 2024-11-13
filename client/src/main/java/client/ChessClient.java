@@ -241,7 +241,7 @@ public class ChessClient {
                 result.append(darkSquareColor);
             }
             if (edgeSquare) {
-                result.append(SET_TEXT_COLOR_MAGENTA);
+                result.append(SET_TEXT_COLOR_PURPLE);
             } else if (Character.isLowerCase(c)) {
                 result.append(darkPieceColor);
             } else {
