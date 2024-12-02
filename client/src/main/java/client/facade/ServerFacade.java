@@ -1,6 +1,7 @@
-package facade;
+package client.facade;
 
 import chess.ChessGame;
+import client.websocket.WebSocketCommunicator;
 import com.google.gson.Gson;
 import deserializer.ChessDeserializer;
 import exception.ResponseException;
@@ -18,6 +19,7 @@ import java.util.Map;
 
 public class ServerFacade {
     private final String serverUrl;
+    private final WebSocketCommunicator webSocketCommunicator = new WebSocketCommunicator();
 
     public ServerFacade(String serverUrl) {
         this.serverUrl = serverUrl;

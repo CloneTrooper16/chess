@@ -6,7 +6,7 @@ import model.AuthData;
 import model.UserData;
 import org.junit.jupiter.api.*;
 import server.Server;
-import facade.ServerFacade;
+import client.facade.ServerFacade;
 
 
 public class ServerFacadeTests {

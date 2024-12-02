@@ -2,14 +2,17 @@ package server;
 
 import dataaccess.ServerException;
 import handler.Handler;
+import handler.WebSocketHandler;
 import spark.*;
 
 public class Server {
     private final Handler handler;
+    private final WebSocketHandler webSocketHandler;
 
     public Server() {
         try {
             handler = new Handler();
+            webSocketHandler = new WebSocketHandler();
         } catch (ServerException e) {
             throw new RuntimeException(e);
         }
@@ -19,6 +22,8 @@ public class Server {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
+
+        Spark.webSocket("/ws", webSocketHandler);
 
         // Register your endpoints and handle exceptions here.
         Spark.get("/game", handler::listGames);
