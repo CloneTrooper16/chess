@@ -26,7 +26,6 @@ public class WebSocketCommunicator extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-//                    ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
                     handleMessage(message);
                 }
             });
@@ -42,7 +41,7 @@ public class WebSocketCommunicator extends Endpoint {
     }
 
     private void handleMessage(String message) {
-        char messageType = message.split(":")[1].charAt(1);
+        char messageType = message.split(":")[2].charAt(1);
         switch (messageType) {
             case 'N' -> {
                 handleNotification(message);
