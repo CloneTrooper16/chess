@@ -42,7 +42,6 @@ public class WebSocketHandler {
         }
 
         System.out.printf("Received: %s\n", message);
-        session.getRemote().sendString(new Gson().toJson(new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "Testing45")));
     }
 
     private void connect(int gameID, String authToken, Session session) throws IOException, ServerException {
