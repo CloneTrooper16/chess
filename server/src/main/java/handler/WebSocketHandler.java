@@ -48,10 +48,10 @@ public class WebSocketHandler {
     private void connect(int gameID, String authToken, Session session) throws IOException, ServerException {
         AuthData auth = authService.getAuth(authToken);
         String username = auth.username();
-        connections.add(username, session);
+        connections.add(gameID, username, session);
         var message = String.format("%s has joined the game as...", username);
         var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
-        connections.broadcast(username, notification);
+        connections.broadcast(session, username, notification);
     }
 
     private void exit(UserGameCommand.CommandType visitorName) throws IOException {
