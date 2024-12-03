@@ -58,7 +58,7 @@ public class GameService {
         return authDataAccess.getAuth(authToken) != null;
     }
 
-    private GameData getGame(int gameID) throws ServerException {
+    public GameData getGame(int gameID) throws ServerException {
         return gameDataAccess.getGame(gameID);
     }
 
