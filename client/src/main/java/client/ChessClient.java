@@ -134,7 +134,7 @@ public class ChessClient {
                 } else {
                     server.joinGame(userAuth.authToken(), ChessGame.TeamColor.BLACK, gameID);
                 }
-
+                state = State.GAMING;
                 return "";
 //                return printWhiteBlackBoards(board); //TODO:the LOAD GAME MESSAGE needs to have the gameData in it
             }
@@ -177,19 +177,32 @@ public class ChessClient {
                     + secondaryColor + " - exits chess program\n"
                     + primaryColor + " - help"
                     + secondaryColor + " - displays this menu \n";
+        } else if (state == State.LOGGED_IN) {
+            return primaryColor + " - create <name>"
+                    + secondaryColor + " - creates a game \n"
+                    + primaryColor + " - list"
+                    + secondaryColor + " - lists all games \n"
+                    + primaryColor + " - join <id> [WHITE|BLACK]"
+                    + secondaryColor + " - joins a game\n"
+                    + primaryColor + " - observe <id>"
+                    + secondaryColor + " - observe an ongoing game\n"
+                    + primaryColor + " - logout"
+                    + secondaryColor + " - leaves the chess program\n"
+                    + primaryColor + " - quit"
+                    + secondaryColor + " - exits chess program\n"
+                    + primaryColor + " - help"
+                    + secondaryColor + " - displays this menu \n";
         }
-        return primaryColor + " - create <name>"
-                + secondaryColor + " - creates a game \n"
-                + primaryColor + " - list"
-                + secondaryColor + " - lists all games \n"
-                + primaryColor + " - join <id> [WHITE|BLACK]"
-                + secondaryColor + " - joins a game\n"
-                + primaryColor + " - observe <id>"
-                + secondaryColor + " - observe an ongoing game\n"
-                + primaryColor + " - logout"
-                + secondaryColor + " - leaves the chess program\n"
-                + primaryColor + " - quit"
-                + secondaryColor + " - exits chess program\n"
+        return primaryColor + " - highlight <square>"
+                + secondaryColor + " - highlights all legal moves for piece in selected square \n"
+                + primaryColor + " - move <square> <destination>"
+                + secondaryColor + " - move piece from square to destination \n"
+                + primaryColor + " - leave"
+                + secondaryColor + " - leaves current game\n"
+                + primaryColor + " - resign"
+                + secondaryColor + " - resigns current game\n"
+                + primaryColor + " - redraw"
+                + secondaryColor + " - redraws the board\n"
                 + primaryColor + " - help"
                 + secondaryColor + " - displays this menu \n";
     }
