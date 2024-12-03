@@ -37,8 +37,7 @@ public class WebSocketHandler {
         if (commandType != 'M') {
             UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
             switch (command.getCommandType()) {
-                case CONNECT ->
-                        connect(command.getGameID(), command.getAuthToken(), session); //TODO: update to username
+                case CONNECT -> connect(command.getGameID(), command.getAuthToken(), session);
                 case MAKE_MOVE -> exit(command.getCommandType());
             }
         } else {
