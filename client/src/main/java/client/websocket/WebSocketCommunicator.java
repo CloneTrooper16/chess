@@ -3,6 +3,7 @@ package client.websocket;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import websocket.commands.UserGameCommand;
+import websocket.messages.Notification;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -56,7 +57,8 @@ public class WebSocketCommunicator extends Endpoint {
     }
 
     private void handleNotification(String message) {
-        notificationHandler.notify("Notify not implemented");
+        Notification notification = new Gson().fromJson(message, Notification.class);
+        notificationHandler.notify(notification.getMessage());
     }
 
     private void handleError(String message) {
@@ -69,8 +71,8 @@ public class WebSocketCommunicator extends Endpoint {
 
     public void connectGame(String authToken, int gameID) throws ResponseException {
         try {
-            var action = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action));
+            var command = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
         }
