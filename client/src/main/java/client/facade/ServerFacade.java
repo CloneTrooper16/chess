@@ -1,6 +1,7 @@
 package client.facade;
 
 import chess.ChessGame;
+import client.websocket.NotificationHandler;
 import client.websocket.WebSocketCommunicator;
 import com.google.gson.Gson;
 import deserializer.ChessDeserializer;
@@ -19,10 +20,12 @@ import java.util.Map;
 
 public class ServerFacade {
     private final String serverUrl;
-    private final WebSocketCommunicator webSocketCommunicator = new WebSocketCommunicator();
+    private final NotificationHandler notificationHandler;
+    private WebSocketCommunicator ws;
 
-    public ServerFacade(String serverUrl) {
+    public ServerFacade(String serverUrl, NotificationHandler notificationHandler) {
         this.serverUrl = serverUrl;
+        this.notificationHandler = notificationHandler;
     }
 
 
@@ -65,6 +68,8 @@ public class ServerFacade {
         headers.put("authorization", authToken);
         JoinGameRequest joinGameRequest = new JoinGameRequest(playerColor, gameID);
         this.makeRequest("PUT", path, headers, joinGameRequest, null);
+        ws = new WebSocketCommunicator(serverUrl, notificationHandler);
+        ws.connectGame(authToken, gameID);
     }
 
     public void clear() throws ResponseException {
