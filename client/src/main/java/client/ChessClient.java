@@ -1,6 +1,7 @@
 package client;
 
 import chess.ChessGame;
+import client.websocket.NotificationHandler;
 import exception.ResponseException;
 import model.AuthData;
 import model.GameData;
@@ -16,12 +17,14 @@ public class ChessClient {
     private AuthData userAuth = null;
     private final ServerFacade server;
     private final String serverUrl;
+    private final NotificationHandler notificationHandler;
     private State state = State.LOGGED_OUT;
     private final Map<Integer, GameData> games = new HashMap<>();
 
-    public ChessClient(String serverUrl) {
-        server = new ServerFacade(serverUrl);
+    public ChessClient(String serverUrl, NotificationHandler notificationHandler) {
+        server = new ServerFacade(serverUrl, notificationHandler);
         this.serverUrl = serverUrl;
+        this.notificationHandler = notificationHandler;
     }
 
     public String eval(String input) {
@@ -132,7 +135,8 @@ public class ChessClient {
                     server.joinGame(userAuth.authToken(), ChessGame.TeamColor.BLACK, gameID);
                 }
 
-                return printWhiteBlackBoards(board);
+                return "";
+//                return printWhiteBlackBoards(board); //TODO:the LOAD GAME MESSAGE needs to have the gameData in it
             }
             else {
                 throw new ResponseException(400, "Invalid game id");
