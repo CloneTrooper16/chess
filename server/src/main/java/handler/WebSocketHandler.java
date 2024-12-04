@@ -107,8 +107,10 @@ public class WebSocketHandler {
     private String getPlayerColor(GameData game, String username) {
         if (game.whiteUsername().equals(username)) {
             return "white";
+        } else if (game.blackUsername().equals(username)) {
+            return "black";
         }
-        return "black";
+        return "an observer";
     }
 
     private ChessGame.TeamColor getTeamColor(String color) {

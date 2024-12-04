@@ -2,6 +2,7 @@ package client;
 
 import chess.ChessGame;
 import client.websocket.NotificationHandler;
+import client.websocket.WebSocketCommunicator;
 import exception.ResponseException;
 import model.AuthData;
 import model.GameData;
@@ -20,6 +21,7 @@ public class ChessClient {
     private final NotificationHandler notificationHandler;
     private State state = State.LOGGED_OUT;
     private final Map<Integer, GameData> games = new HashMap<>();
+    private WebSocketCommunicator ws;
 
     public ChessClient(String serverUrl, NotificationHandler notificationHandler) {
         server = new ServerFacade(serverUrl, notificationHandler);
@@ -154,7 +156,9 @@ public class ChessClient {
                 int id = Integer.parseInt(params[0]);
                 var gameInfo = games.get(id);
                 int gameID = gameInfo.gameID();
-                String board = gameInfo.game().getBoard().toString();
+
+                ws = new WebSocketCommunicator(serverUrl, notificationHandler);
+                ws.connectGame(userAuth.authToken(), gameID);
                 return "";
             }
             else {
