@@ -19,13 +19,13 @@ public class ConnectionManager {
         connections.remove(session);
     }
 
-    public void broadcast(Session currentSession, String excludeUsername, ServerMessage notification) throws IOException {
+    public void broadcast(Session currentSession, String excludeUsername, ServerMessage serverMessage) throws IOException {
         var removeList = new ArrayList<Connection>();
         for (var c : connections.values()) {
             if (c.session.isOpen()) {
                 boolean sameGame = connections.get(c.session).gameID == connections.get(currentSession).gameID;
                 if (!c.username.equals(excludeUsername) && sameGame) {
-                    c.send(notification.toString());
+                    c.send(serverMessage.toString());
                 }
             } else {
                 removeList.add(c);
@@ -36,6 +36,11 @@ public class ConnectionManager {
         for (var c : removeList) {
             connections.remove(c.session);
         }
+    }
+
+    public void send(Session currentSession, ServerMessage serverMessage) throws IOException {
+        var c = connections.get(currentSession);
+        c.send(serverMessage.toString());
     }
 }
 

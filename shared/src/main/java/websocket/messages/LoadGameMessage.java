@@ -1,18 +1,21 @@
 package websocket.messages;
 
 import model.GameData;
+import model.GameMessage;
 
 public class LoadGameMessage extends ServerMessage{
-    private final String message;
+    private final GameMessage game;
 
-    public LoadGameMessage(ServerMessageType type, String message) {
+    public LoadGameMessage(ServerMessageType type, GameMessage game) {
         super(type);
-        this.message = message;
+        this.game = game;
+    }
+
+    public GameMessage getGame() {
+        return game;
     }
 
     public String getMessage() {
-        return message;
+        return game.toString();
     }
 }
-
-//TODO: change to GameData object...

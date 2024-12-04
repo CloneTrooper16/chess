@@ -2,7 +2,9 @@ package client.websocket;
 
 import com.google.gson.Gson;
 import exception.ResponseException;
+import model.GameMessage;
 import websocket.commands.UserGameCommand;
+import websocket.messages.LoadGameMessage;
 import websocket.messages.Notification;
 
 import javax.websocket.*;
@@ -42,7 +44,7 @@ public class WebSocketCommunicator extends Endpoint {
     }
 
     private void handleMessage(String message) {
-        char messageType = message.split(":")[2].charAt(1);
+        char messageType = message.split("serverMessageType")[1].charAt(3);
         switch (messageType) {
             case 'N' -> {
                 handleNotification(message);
@@ -66,7 +68,9 @@ public class WebSocketCommunicator extends Endpoint {
     }
 
     private void handleLoadGame(String message) {
-        notificationHandler.notify("Load game not implemented");
+        LoadGameMessage loadGameMessage = new Gson().fromJson(message, LoadGameMessage.class);
+        GameMessage gameInfo = loadGameMessage.getGame();
+        notificationHandler.printBoard(gameInfo.boardString());
     }
 
     public void connectGame(String authToken, int gameID) throws ResponseException {
