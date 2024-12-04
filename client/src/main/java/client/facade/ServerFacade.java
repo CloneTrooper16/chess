@@ -23,9 +23,10 @@ public class ServerFacade {
     private final NotificationHandler notificationHandler;
     private WebSocketCommunicator ws;
 
-    public ServerFacade(String serverUrl, NotificationHandler notificationHandler) {
+    public ServerFacade(String serverUrl, NotificationHandler notificationHandler) throws ResponseException {
         this.serverUrl = serverUrl;
         this.notificationHandler = notificationHandler;
+        ws = new WebSocketCommunicator(serverUrl, notificationHandler);;
     }
 
 
@@ -68,13 +69,20 @@ public class ServerFacade {
         headers.put("authorization", authToken);
         JoinGameRequest joinGameRequest = new JoinGameRequest(playerColor, gameID);
         this.makeRequest("PUT", path, headers, joinGameRequest, null);
-        ws = new WebSocketCommunicator(serverUrl, notificationHandler);
         ws.connectGame(authToken, gameID);
     }
 
     public void clear() throws ResponseException {
         var path = "/db";
         this.makeRequest("DELETE", path, null, null, null);
+    }
+
+    public void observeGame(String authToken, int gameID) throws ResponseException {
+        ws.connectGame(authToken, gameID);
+    }
+
+    public void leaveGame(String authToken, int gameID) throws ResponseException {
+        ws.leaveGame(authToken, gameID);
     }
 
     private <T> T makeRequest(String method, String path, Map<String, String> headers,

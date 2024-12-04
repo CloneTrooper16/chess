@@ -48,6 +48,7 @@ public class WebSocketHandler {
             switch (command.getCommandType()) {
                 case CONNECT -> connect(command.getGameID(), command.getAuthToken(), session);
                 case MAKE_MOVE -> exit(command.getCommandType());
+                case LEAVE -> leave(command.getGameID(), command.getAuthToken(), session);
             }
         } else {
             MakeMoveCommand command = new Gson().fromJson(message, MakeMoveCommand.class);
@@ -87,6 +88,24 @@ public class WebSocketHandler {
         connections.send(session, loadGame);
     }
 
+    private void leave(int gameID, String authToken, Session session) throws ServerException, IOException {
+        AuthData auth = authService.getAuth(authToken);
+        GameData game = gameService.getGame(gameID);
+        if (auth == null) {
+            handleError(session, "error: invalid auth token");
+            return;
+        }
+        String username = auth.username();
+        var message = String.format("%s has left the game", username);
+        var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        connections.broadcast(session, username, notification);
+        connections.remove(session);
+        if (userWasPlayer(game, username)) {
+            var newGame = removePlayer(game, username);
+            gameService.updateGame(authToken, newGame);
+        }
+    }
+
     private void exit(UserGameCommand.CommandType visitorName) throws IOException {
 //        connections.remove(visitorName);
 //        var message = String.format("%s left the shop", visitorName);
@@ -103,6 +122,17 @@ public class WebSocketHandler {
 //            throw new ResponseException(500, ex.getMessage());
 //        }
 //    }
+
+    private boolean userWasPlayer(GameData game, String username) {
+        return game.whiteUsername().equals(username) || game.blackUsername().equals(username);
+    }
+
+    private GameData removePlayer(GameData game, String userToRemove) {
+        if (game.whiteUsername().equals(userToRemove)) {
+            return new GameData(game.gameID(), null, game.blackUsername(), game.gameName(), game.game());
+        }
+        return new GameData(game.gameID(), game.whiteUsername(), null, game.gameName(), game.game());
+    }
 
     private String getPlayerColor(GameData game, String username) {
         if (game.whiteUsername().equals(username)) {

@@ -16,6 +16,7 @@ import static ui.EscapeSequences.*;
 public class ChessClient {
     private String userName = null;
     private AuthData userAuth = null;
+    private int currentGameID = 0;
     private final ServerFacade server;
     private final String serverUrl;
     private final NotificationHandler notificationHandler;
@@ -23,7 +24,7 @@ public class ChessClient {
     private final Map<Integer, GameData> games = new HashMap<>();
     private WebSocketCommunicator ws;
 
-    public ChessClient(String serverUrl, NotificationHandler notificationHandler) {
+    public ChessClient(String serverUrl, NotificationHandler notificationHandler) throws ResponseException {
         server = new ServerFacade(serverUrl, notificationHandler);
         this.serverUrl = serverUrl;
         this.notificationHandler = notificationHandler;
@@ -42,6 +43,7 @@ public class ChessClient {
                 case "list" -> listGames();
                 case "join" -> joinGame(params);
                 case "observe" -> observeGame(params);
+                case "leave" -> leaveGame();
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -137,6 +139,7 @@ public class ChessClient {
                     server.joinGame(userAuth.authToken(), ChessGame.TeamColor.BLACK, gameID);
                 }
                 state = State.GAMING;
+                currentGameID = gameID;
                 return "";
             }
             else {
@@ -156,9 +159,8 @@ public class ChessClient {
                 int id = Integer.parseInt(params[0]);
                 var gameInfo = games.get(id);
                 int gameID = gameInfo.gameID();
-
-                ws = new WebSocketCommunicator(serverUrl, notificationHandler);
-                ws.connectGame(userAuth.authToken(), gameID);
+                server.observeGame(userAuth.authToken(), gameID);
+                state = State.GAMING;
                 return "";
             }
             else {
@@ -166,6 +168,13 @@ public class ChessClient {
             }
         }
         throw new ResponseException(400, "Expected: <id>");
+    }
+
+    public String leaveGame() throws ResponseException {
+        assertGaming();
+        server.leaveGame(userAuth.authToken(), currentGameID);
+        state = State.LOGGED_IN;
+        return "You left the game";
     }
 
     public String help() {
@@ -215,8 +224,14 @@ public class ChessClient {
     }
 
     private void assertLoggedIn() throws ResponseException {
-        if (state == State.LOGGED_OUT) {
-            throw new ResponseException(400, "You must sign in");
+        if (state != State.LOGGED_IN) {
+            throw new ResponseException(400, "You must sign in and not in a game");
+        }
+    }
+
+    private void assertGaming() throws ResponseException {
+        if (state != State.GAMING) {
+            throw new ResponseException(400, "You need to be in a game");
         }
     }
 

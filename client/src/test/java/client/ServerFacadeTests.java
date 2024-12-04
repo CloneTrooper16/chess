@@ -19,7 +19,7 @@ public class ServerFacadeTests {
     private static NotificationHandler notificationHandler;
 
     @BeforeAll
-    public static void init() {
+    public static void init() throws ResponseException {
         server = new Server();
         var port = server.run(0);
         System.out.println("Started test HTTP server on " + port);

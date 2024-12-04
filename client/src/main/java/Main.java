@@ -1,5 +1,6 @@
 import chess.*;
 import client.Repl;
+import exception.ResponseException;
 
 public class Main {
     public static void main(String[] args) {
@@ -8,6 +9,10 @@ public class Main {
             serverUrl = args[0];
         }
 
-        new Repl(serverUrl).run();
+        try {
+            new Repl(serverUrl).run();
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

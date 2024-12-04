@@ -54,6 +54,15 @@ public class GameService {
         throw new ServerException("unauthorized");
     }
 
+    public void updateGame(String authToken, GameData gameData) throws ServerException {
+        if (isValidAuth(authToken)) {
+            int gameID = gameData.gameID();
+            gameDataAccess.updateGame(gameID, gameData);
+            return;
+        }
+        throw new ServerException("unauthorized");
+    }
+
     private boolean isValidAuth(String authToken) throws ServerException {
         return authDataAccess.getAuth(authToken) != null;
     }
