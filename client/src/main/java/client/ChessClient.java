@@ -44,6 +44,10 @@ public class ChessClient {
                 case "join" -> joinGame(params);
                 case "observe" -> observeGame(params);
                 case "leave" -> leaveGame();
+                case "resign" -> resignGame();
+                case "redraw" -> redrawBoard();
+                case "highlight" -> highlightMove();
+                case "move" -> makeMove();
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -175,6 +179,22 @@ public class ChessClient {
         server.leaveGame(userAuth.authToken(), currentGameID);
         state = State.LOGGED_IN;
         return "You left the game";
+    }
+
+    public String resignGame() {
+        return "resign not implemented";
+    }
+
+    public String redrawBoard() {
+        return "redraw not implement";
+    }
+
+    public String highlightMove() {
+        return "highlight not implemented";
+    }
+
+    public String makeMove() {
+        return "move not implemented";
     }
 
     public String help() {
