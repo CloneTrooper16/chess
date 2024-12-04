@@ -190,8 +190,10 @@ public class ChessClient {
         return "Thanks for playing!";
     }
 
-    public String redrawBoard() {
-        return "redraw not implement";
+    public String redrawBoard() throws ResponseException {
+        assertGaming();
+        server.redrawBoard(userAuth.authToken(), currentGameID);
+        return "";
     }
 
     public String highlightMove() {

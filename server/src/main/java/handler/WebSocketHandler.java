@@ -50,6 +50,7 @@ public class WebSocketHandler {
                 case MAKE_MOVE -> exit(command.getCommandType());
                 case LEAVE -> leave(command.getGameID(), command.getAuthToken(), session);
                 case RESIGN -> resign(command.getGameID(), command.getAuthToken(), session);
+                case REDRAW -> redraw(command.getGameID(), command.getAuthToken(), session);
             }
         } else {
             MakeMoveCommand command = new Gson().fromJson(message, MakeMoveCommand.class);
@@ -135,6 +136,26 @@ public class WebSocketHandler {
 //        var message = String.format("%s left the shop", visitorName);
 //        var notification = new Notification(Notification.Type.DEPARTURE, message);
 //        connections.broadcast(visitorName, notification);
+    }
+
+    private void redraw(int gameID, String authToken, Session session) throws ServerException, IOException {
+        AuthData auth = authService.getAuth(authToken);
+        GameData game = gameService.getGame(gameID);
+        if (game == null) {
+            handleError(session, "error: invalid gameID");
+            return;
+        }
+        if (auth == null) {
+            handleError(session, "error: invalid auth token");
+            return;
+        }
+        String username = auth.username();
+        String color = getPlayerColor(game, username);
+        ChessGame.TeamColor teamColor = getTeamColor(color);
+        String boardString = createBoardString(gameID, teamColor);
+        var gameMessage = new GameMessage(gameID, teamColor, boardString);
+        var loadGame = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameMessage);
+        connections.send(session, loadGame);
     }
 
 

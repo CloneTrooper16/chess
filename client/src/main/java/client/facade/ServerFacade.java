@@ -89,6 +89,10 @@ public class ServerFacade {
         ws.resignGame(authToken, gameID);
     }
 
+    public void redrawBoard(String authToken, int gameID) throws ResponseException {
+        ws.redrawBoard(authToken, gameID);
+    }
+
     private <T> T makeRequest(String method, String path, Map<String, String> headers,
                               Object request, Class<T> responseClass) throws ResponseException {
         try {
