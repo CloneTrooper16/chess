@@ -192,7 +192,9 @@ public class WebSocketHandler {
 
 
     private boolean userWasPlayer(GameData game, String username) {
-        return game.whiteUsername().equals(username) || game.blackUsername().equals(username);
+        if (game.whiteUsername() != null && game.whiteUsername().equals(username)) {
+            return true;
+        } else return game.blackUsername() != null && game.blackUsername().equals(username);
     }
 
     private GameData removePlayer(GameData game, String userToRemove) {
@@ -210,9 +212,9 @@ public class WebSocketHandler {
     }
 
     private String getPlayerColor(GameData game, String username) {
-        if (game.whiteUsername().equals(username)) {
+        if (game.whiteUsername() != null && game.whiteUsername().equals(username)) {
             return "white";
-        } else if (game.blackUsername().equals(username)) {
+        } else if (game.blackUsername() != null && game.blackUsername().equals(username)) {
             return "black";
         }
         return "an observer";
@@ -267,8 +269,8 @@ public class WebSocketHandler {
         String darkSquareColor = SET_BG_COLOR_DARK_GREY;
         String lightPieceColor = SET_TEXT_COLOR_AQUA;
         String darkPieceColor = SET_TEXT_COLOR_RED;
-        String highLightColor = SET_BG_COLOR_DARK_GREEN;
-        String highDarkColor = SET_BG_COLOR_GREEN;
+        String highLightColor = SET_BG_COLOR_GREEN;
+        String highDarkColor = SET_BG_COLOR_DARK_GREEN;
         int row = isWhite ? 9 : 0;
         int col = isWhite ? 0 : 9;
         boolean lastFirstSquareLight = false;
