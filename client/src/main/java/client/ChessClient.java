@@ -121,6 +121,9 @@ public class ChessClient {
             this.games.put(i, game);
             i++;
         }
+        if (result.toString().isEmpty()) {
+            result.append("no games yet");
+        }
         return result.toString();
     }
 
