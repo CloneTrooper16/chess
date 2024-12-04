@@ -12,7 +12,7 @@ public class MemoryGameDAO implements GameDAO{
     private final HashMap<Integer, GameData> games = new HashMap<>();
 
     public GameData createGame(String gameName) throws ServerException {
-        var game = new GameData(nextID++, null, null, gameName, new ChessGame());
+        var game = new GameData(nextID++, null, null, gameName, new ChessGame(), false);
         games.put(game.gameID(), game);
         return game;
     }

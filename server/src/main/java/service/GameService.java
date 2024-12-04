@@ -4,7 +4,6 @@ import chess.ChessGame;
 import dataaccess.AuthDAO;
 import dataaccess.ServerException;
 import dataaccess.GameDAO;
-import handler.Handler;
 import model.GameData;
 import model.JoinGameRequest;
 
@@ -88,9 +87,11 @@ public class GameService {
 
     private GameData updateGamePlayers(GameData gameData, String username, ChessGame.TeamColor color) {
         if (color == ChessGame.TeamColor.WHITE) {
-            return new GameData(gameData.gameID(), username, gameData.blackUsername(), gameData.gameName(), gameData.game());
+            return new GameData(gameData.gameID(), username, gameData.blackUsername(),
+                    gameData.gameName(), gameData.game(), gameData.isOver());
         }
-        return new GameData(gameData.gameID(), gameData.whiteUsername(), username, gameData.gameName(), gameData.game());
+        return new GameData(gameData.gameID(), gameData.whiteUsername(), username,
+                gameData.gameName(), gameData.game(), gameData.isOver());
     }
 
     public void deleteAllGames() throws ServerException {

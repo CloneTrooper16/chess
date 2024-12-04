@@ -184,8 +184,10 @@ public class ChessClient {
         return "You left the game";
     }
 
-    public String resignGame() {
-        return "resign not implemented";
+    public String resignGame() throws ResponseException {
+        assertGaming();
+        server.resignGame(userAuth.authToken(), currentGameID);
+        return "Thanks for playing!";
     }
 
     public String redrawBoard() {
@@ -248,7 +250,7 @@ public class ChessClient {
 
     private void assertLoggedIn() throws ResponseException {
         if (state != State.LOGGED_IN) {
-            throw new ResponseException(400, "You must sign in and not in a game");
+            throw new ResponseException(400, "You must sign in and not be in a game");
         }
     }
 

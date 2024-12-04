@@ -49,6 +49,7 @@ public class WebSocketHandler {
                 case CONNECT -> connect(command.getGameID(), command.getAuthToken(), session);
                 case MAKE_MOVE -> exit(command.getCommandType());
                 case LEAVE -> leave(command.getGameID(), command.getAuthToken(), session);
+                case RESIGN -> resign(command.getGameID(), command.getAuthToken(), session);
             }
         } else {
             MakeMoveCommand command = new Gson().fromJson(message, MakeMoveCommand.class);
@@ -106,6 +107,29 @@ public class WebSocketHandler {
         }
     }
 
+    private void resign(int gameID, String authToken, Session session) throws IOException, ServerException {
+        AuthData auth = authService.getAuth(authToken);
+        GameData game = gameService.getGame(gameID);
+        if (auth == null) {
+            handleError(session, "error: invalid auth token");
+            return;
+        }
+        String username = auth.username();
+        if (!userWasPlayer(game, username)) {
+            handleError(session, "error: observers can't resign");
+            return;
+        }
+        if (game.isOver()) {
+            handleError(session, "error: can't resign, game is already finished");
+            return;
+        }
+        var newGame = endGame(game);
+        gameService.updateGame(authToken, newGame);
+        var message = String.format("%s has resigned", username);
+        var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        connections.broadcast(session, null, notification);
+    }
+
     private void exit(UserGameCommand.CommandType visitorName) throws IOException {
 //        connections.remove(visitorName);
 //        var message = String.format("%s left the shop", visitorName);
@@ -113,15 +137,6 @@ public class WebSocketHandler {
 //        connections.broadcast(visitorName, notification);
     }
 
-//    public void makeNoise(String petName, String sound) throws ResponseException {
-//        try {
-//            var message = String.format("%s says %s", petName, sound);
-//            var notification = new Notification(Notification.Type.NOISE, message);
-//            connections.broadcast("", notification);
-//        } catch (Exception ex) {
-//            throw new ResponseException(500, ex.getMessage());
-//        }
-//    }
 
     private boolean userWasPlayer(GameData game, String username) {
         return game.whiteUsername().equals(username) || game.blackUsername().equals(username);
@@ -129,9 +144,16 @@ public class WebSocketHandler {
 
     private GameData removePlayer(GameData game, String userToRemove) {
         if (game.whiteUsername().equals(userToRemove)) {
-            return new GameData(game.gameID(), null, game.blackUsername(), game.gameName(), game.game());
+            return new GameData(game.gameID(), null, game.blackUsername(),
+                    game.gameName(), game.game(), game.isOver());
         }
-        return new GameData(game.gameID(), game.whiteUsername(), null, game.gameName(), game.game());
+        return new GameData(game.gameID(), game.whiteUsername(), null,
+                game.gameName(), game.game(), game.isOver());
+    }
+
+    private GameData endGame(GameData game) {
+        return new GameData(game.gameID(), game.whiteUsername(), game.blackUsername(),
+                game.gameName(), game.game(), true);
     }
 
     private String getPlayerColor(GameData game, String username) {

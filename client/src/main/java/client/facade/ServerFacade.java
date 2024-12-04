@@ -85,6 +85,10 @@ public class ServerFacade {
         ws.leaveGame(authToken, gameID);
     }
 
+    public void resignGame(String authToken, int gameID) throws ResponseException {
+        ws.resignGame(authToken, gameID);
+    }
+
     private <T> T makeRequest(String method, String path, Map<String, String> headers,
                               Object request, Class<T> responseClass) throws ResponseException {
         try {
