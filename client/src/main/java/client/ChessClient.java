@@ -136,7 +136,6 @@ public class ChessClient {
                 }
                 state = State.GAMING;
                 return "";
-//                return printWhiteBlackBoards(board); //TODO:the LOAD GAME MESSAGE needs to have the gameData in it
             }
             else {
                 throw new ResponseException(400, "Invalid game id");
@@ -156,7 +155,7 @@ public class ChessClient {
                 var gameInfo = games.get(id);
                 int gameID = gameInfo.gameID();
                 String board = gameInfo.game().getBoard().toString();
-                return printWhiteBlackBoards(board);
+                return "";
             }
             else {
                 throw new ResponseException(400, "Invalid game id");
@@ -230,172 +229,4 @@ public class ChessClient {
         }
         return false;
     }
-
-    private String printWhiteBlackBoards(String blackBoard) {
-        String whiteBoard = reverseBoard(blackBoard);
-        whiteBoard = addBoardLetters(whiteBoard);
-        blackBoard = rotateBoard(whiteBoard);
-        return printboard(blackBoard) + "\n\n" + printboard(whiteBoard);
-    }
-
-    private String printboard(String board) {
-        String lightSquareColor = SET_BG_COLOR_WHITE;
-        String darkSquareColor = SET_BG_COLOR_DARK_GREY;
-        String lightPieceColor = SET_TEXT_COLOR_AQUA;
-        String darkPieceColor = SET_TEXT_COLOR_RED;
-        boolean lastFirstSquareLight = false;
-        boolean edgeSquare = true;
-        SquareColor currentSquareColor = SquareColor.LIGHT;
-        var result = new StringBuilder();
-        result.append(ERASE_SCREEN);
-        for (int i = 0; i < board.length(); i++) {
-            char c = board.charAt(i);
-            if (edgeSquare || c == ' ') {
-                result.append(SET_BG_COLOR_LIGHT_GREY);
-            } else if (currentSquareColor == SquareColor.LIGHT) {
-                result.append(lightSquareColor);
-            } else {
-                result.append(darkSquareColor);
-            }
-            if (edgeSquare) {
-                result.append(SET_TEXT_COLOR_PURPLE);
-            } else if (Character.isLowerCase(c)) {
-                result.append(darkPieceColor);
-            } else {
-                result.append(lightPieceColor);
-            }
-            if (c == '\n') {
-                result.append(RESET_BG_COLOR);
-                result.append(c);
-            }
-            else if (c == '_') {
-                result.append(EMPTY);
-            } else {
-                String s = String.valueOf(c);
-                s = findChessUnicode(s, board, i);
-                result.append(s);
-            }
-            if (i < board.length() - 1) {
-                var nextChar = findNextChar(c, board, i);
-                if (nextSquareOnBoard(c, nextChar) && lastFirstSquareLight) {
-                    currentSquareColor = SquareColor.DARK;
-                    lastFirstSquareLight = false;
-                } else if (nextSquareOnBoard(c, nextChar) && !lastFirstSquareLight) {
-                    currentSquareColor = SquareColor.LIGHT;
-                    lastFirstSquareLight = true;
-                }
-                if (edgeSquare && nextSquareOnBoard(c, nextChar)) {
-                    edgeSquare = false;
-                } else if (nextSquareOnEdge(nextChar)) {
-                    edgeSquare = true;
-                }
-            }
-            if (!edgeSquare && currentSquareColor == SquareColor.LIGHT) {
-                currentSquareColor = SquareColor.DARK;
-            } else {
-                currentSquareColor = SquareColor.LIGHT;
-            }
-
-        }
-        result.append(RESET_BG_COLOR);
-        return result.toString();
-    }
-
-    private enum SquareColor{
-        LIGHT,
-        DARK,
-    }
-
-    private String rotateBoard(String board) {
-        String[] lines = board.split("\n");
-        for (int i = 0; i < lines.length; i++) {
-            lines[i] = new StringBuilder(lines[i]).reverse().toString();
-        }
-        Collections.reverse(Arrays.asList(lines));
-        return String.join("\n", lines);
-    }
-
-    private String reverseBoard(String board) {
-        String[] lines = board.split("\n");
-        Collections.reverse(Arrays.asList(lines));
-        return String.join("\n", lines);
-    }
-
-    private String addBoardLetters(String board) {
-        String[] lines = board.split("\n");
-        var result = new StringBuilder();
-        int i = 8;
-        result.append("_");
-        result.append(fullWidthCharacter("abcdefgh"));
-        result.append("_\n");
-        for (String line: lines) {
-            result.append(fullWidthCharacter(String.valueOf(i)));
-            result.append(line);
-            result.append(fullWidthCharacter(String.valueOf(i)));
-            result.append("\n");
-            i--;
-        }
-        result.append("_");
-        result.append(fullWidthCharacter("abcdefgh"));
-        result.append("_\n");
-        return result.toString();
-    }
-    private boolean nextSquareOnBoard(char curr, char next) {
-        if (Character.isDigit(curr) && next != '\n') {
-            return true;
-        }
-        return false;
-    }
-
-    private boolean nextSquareOnEdge(char next) {
-        return Character.isDigit(next);
-    }
-
-    private String fullWidthCharacter(String characters) {
-        var result = new StringBuilder();
-        for (char c : characters.toCharArray()) {
-            result.append(" ");
-            result.append(c);
-            result.append(" ");
-        }
-        return result.toString();
-    }
-
-    private String findChessUnicode(String s, String board, int i) {
-        switch(s) {
-            case "K" -> s = WHITE_KING;
-            case "Q" -> s = WHITE_QUEEN;
-            case "B" -> s = WHITE_BISHOP;
-            case "N" -> s = WHITE_KNIGHT;
-            case "P" -> s = WHITE_PAWN;
-            case "R" -> s = WHITE_ROOK;
-            case "k" -> s = BLACK_KING;
-            case "q" -> s = BLACK_QUEEN;
-            case "b" -> {
-                char nextChar = findNextChar(s.charAt(0), board, i);
-                if ((nextChar != 'c' && nextChar != 'a')) {
-                    s = BLACK_BISHOP;
-                }
-            }
-            case "n" -> s = BLACK_KNIGHT;
-            case "p" -> s = BLACK_PAWN;
-            case "r" -> s = BLACK_ROOK;
-            default -> s = s;
-        }
-        return s;
-    }
-
-    private char findNextChar(char c, String board, int i) {
-        int j = i + 1;
-        char res = 'i';
-        while (res == 'i') {
-            if (board.charAt(j) == ' ') {
-                j++;
-            } else {
-                res = board.charAt(j);
-            }
-        }
-        return res;
-    }
-
 }
