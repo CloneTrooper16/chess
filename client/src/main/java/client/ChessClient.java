@@ -46,7 +46,7 @@ public class ChessClient {
                 case "leave" -> leaveGame();
                 case "resign" -> resignGame();
                 case "redraw" -> redrawBoard();
-                case "highlight" -> highlightMove();
+                case "highlight" -> highlightMove(params);
                 case "move" -> makeMove();
                 case "quit" -> "quit";
                 default -> help();
@@ -196,8 +196,13 @@ public class ChessClient {
         return "";
     }
 
-    public String highlightMove() {
-        return "highlight not implemented";
+    public String highlightMove(String... params) throws ResponseException {
+        assertGaming();
+        if (params.length == 1) {
+            server.highlightMoves(userAuth.authToken(), currentGameID, params[0]);
+            return "";
+        }
+        throw new ResponseException(400, "Expected: <square>");
     }
 
     public String makeMove() {

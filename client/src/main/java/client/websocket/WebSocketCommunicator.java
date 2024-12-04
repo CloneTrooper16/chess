@@ -1,8 +1,10 @@
 package client.websocket;
 
+import chess.ChessPosition;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.GameMessage;
+import websocket.commands.HighlightMovesCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
@@ -104,12 +106,63 @@ public class WebSocketCommunicator extends Endpoint {
 
     public void redrawBoard(String authToken, int gameID) throws ResponseException {
         try {
-            var command = new UserGameCommand(UserGameCommand.CommandType.REDRAW, authToken, gameID);
+            var command = new UserGameCommand(UserGameCommand.CommandType.DRAW, authToken, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
         }
     }
 
+    public void highlightMoves(String authToken, int gameID, String square) throws ResponseException {
+        try {
+            ChessPosition pos = parsePos(square);
+            var command = new HighlightMovesCommand(UserGameCommand.CommandType.HIGHLIGHT, authToken, gameID, pos);
+            this.session.getBasicRemote().sendText(new Gson().toJson(command));
+        } catch (IOException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+    }
+
+    private ChessPosition parsePos(String square) {
+        char colChar = square.charAt(0);
+        char rowChar = square.charAt(1);
+        int col = parseCol(colChar);
+        int row = parseRow(Integer.parseInt(String.valueOf(rowChar)));
+        return new ChessPosition(row, col);
+    }
+
+    private int parseCol(char colChar) {
+        switch(colChar) {
+            case 'a' -> {
+                return 1;
+            }
+            case 'b' -> {
+                return 2;
+            }
+            case 'c' -> {
+                return 3;
+            }
+            case 'd' -> {
+                return 4;
+            }
+            case 'e' -> {
+                return 5;
+            }
+            case 'f' -> {
+                return 6;
+            }
+            case 'g' -> {
+                return 7;
+            }
+            case 'h' -> {
+                return 8;
+            }
+        }
+        return 0;
+    }
+
+    private int parseRow(int rowInt) {
+        return rowInt;
+    }
 
 }

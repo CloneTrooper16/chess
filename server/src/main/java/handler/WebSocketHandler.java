@@ -1,6 +1,10 @@
 package handler;
 
+import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
+import chess.rulebook.FIDERuleBook;
 import com.google.gson.Gson;
 import dataaccess.*;
 import model.AuthData;
@@ -12,6 +16,7 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import service.AuthService;
 import service.GameService;
 import websocket.ConnectionManager;
+import websocket.commands.HighlightMovesCommand;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
@@ -22,7 +27,9 @@ import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 
 import static ui.EscapeSequences.*;
 
@@ -43,17 +50,22 @@ public class WebSocketHandler {
     public void onMessage(Session session, String message) throws IOException, ServerException {
         int ctIndex = message.indexOf("commandType");
         char commandType = message.charAt(ctIndex + 14);
-        if (commandType != 'M') {
+        if (!(commandType == 'M' || commandType == 'H')) {
             UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
             switch (command.getCommandType()) {
                 case CONNECT -> connect(command.getGameID(), command.getAuthToken(), session);
-                case MAKE_MOVE -> exit(command.getCommandType());
+//                case MAKE_MOVE -> exit(command.getCommandType());
                 case LEAVE -> leave(command.getGameID(), command.getAuthToken(), session);
                 case RESIGN -> resign(command.getGameID(), command.getAuthToken(), session);
-                case REDRAW -> redraw(command.getGameID(), command.getAuthToken(), session);
+                case DRAW -> redraw(command.getGameID(), command.getAuthToken(), session);
             }
         } else {
-            MakeMoveCommand command = new Gson().fromJson(message, MakeMoveCommand.class);
+            if (commandType == 'M') {
+                MakeMoveCommand command = new Gson().fromJson(message, MakeMoveCommand.class);
+            } else {
+                HighlightMovesCommand command = new Gson().fromJson(message, HighlightMovesCommand.class);
+                highlightMoves(command.getGameID(), command.getAuthToken(), command.getPos(), session);
+            }
         }
 
         System.out.printf("Received: %s\n", message);
@@ -84,7 +96,7 @@ public class WebSocketHandler {
         var message = String.format("%s has joined the game as %s", username, color);
         var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(session, username, notification);
-        String boardString = createBoardString(gameID, teamColor);
+        String boardString = createBoardString(gameID, teamColor, null);
         var gameMessage = new GameMessage(gameID, teamColor, boardString);
         var loadGame = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameMessage);
         connections.send(session, loadGame);
@@ -152,7 +164,27 @@ public class WebSocketHandler {
         String username = auth.username();
         String color = getPlayerColor(game, username);
         ChessGame.TeamColor teamColor = getTeamColor(color);
-        String boardString = createBoardString(gameID, teamColor);
+        String boardString = createBoardString(gameID, teamColor, null);
+        var gameMessage = new GameMessage(gameID, teamColor, boardString);
+        var loadGame = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameMessage);
+        connections.send(session, loadGame);
+    }
+
+    private void highlightMoves(int gameID, String authToken, ChessPosition pos, Session session) throws ServerException, IOException {
+        AuthData auth = authService.getAuth(authToken);
+        GameData game = gameService.getGame(gameID);
+        if (game == null) {
+            handleError(session, "error: invalid gameID");
+            return;
+        }
+        if (auth == null) {
+            handleError(session, "error: invalid auth token");
+            return;
+        }
+        String username = auth.username();
+        String color = getPlayerColor(game, username);
+        ChessGame.TeamColor teamColor = getTeamColor(color);
+        String boardString = createBoardString(gameID, teamColor, pos);
         var gameMessage = new GameMessage(gameID, teamColor, boardString);
         var loadGame = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameMessage);
         connections.send(session, loadGame);
@@ -193,17 +225,32 @@ public class WebSocketHandler {
         return ChessGame.TeamColor.BLACK;
     }
 
-    private String createBoardString(int gameID, ChessGame.TeamColor color) throws ServerException {
+    private String createBoardString(int gameID, ChessGame.TeamColor color, ChessPosition pos) throws ServerException {
         GameData gameData = gameService.getGame(gameID);
         int gameId = gameData.gameID();
         String board = gameData.game().getBoard().toString();
+        ChessBoard chessBoard = gameData.game().getBoard();
         String whiteBoard = reverseBoard(board);
         whiteBoard = addBoardLetters(whiteBoard);
-        if (color == ChessGame.TeamColor.WHITE) {
-            return printBoard(whiteBoard);
-        } else {
-            return printBoard(rotateBoard(whiteBoard));
+        HashSet<ChessPosition> moves = new HashSet<>();
+        if (pos != null) {
+            moves.addAll(getLegalMoves(pos, chessBoard));
         }
+        if (color == ChessGame.TeamColor.WHITE) {
+            return printBoard(whiteBoard, moves, true);
+        } else {
+            return printBoard(rotateBoard(whiteBoard), moves, false); //observer need change here?
+        }
+    }
+
+    private Collection<ChessPosition> getLegalMoves(ChessPosition pos, ChessBoard board) {
+        var ruleBook = new FIDERuleBook(board);
+        var validMoves = ruleBook.validMoves(pos);
+        HashSet<ChessPosition> options = new HashSet<>();
+        for (ChessMove move : validMoves) {
+            options.add(move.getEndPosition());
+        }
+        return options;
     }
 
 
@@ -211,14 +258,19 @@ public class WebSocketHandler {
         String whiteBoard = reverseBoard(blackBoard);
         whiteBoard = addBoardLetters(whiteBoard);
         blackBoard = rotateBoard(whiteBoard);
-        return printBoard(blackBoard) + "\n\n" + printBoard(whiteBoard);
+//        return printBoard(blackBoard) + "\n\n" + printBoard(whiteBoard);
+        return "";
     }
 
-    private String printBoard(String board) {
+    private String printBoard(String board, Collection<ChessPosition> moves, boolean isWhite) {
         String lightSquareColor = SET_BG_COLOR_WHITE;
         String darkSquareColor = SET_BG_COLOR_DARK_GREY;
         String lightPieceColor = SET_TEXT_COLOR_AQUA;
         String darkPieceColor = SET_TEXT_COLOR_RED;
+        String highLightColor = SET_BG_COLOR_DARK_GREEN;
+        String highDarkColor = SET_BG_COLOR_GREEN;
+        int row = isWhite ? 9 : 0;
+        int col = isWhite ? 0 : 9;
         boolean lastFirstSquareLight = false;
         boolean edgeSquare = true;
         SquareColor currentSquareColor = SquareColor.LIGHT;
@@ -229,9 +281,19 @@ public class WebSocketHandler {
             if (edgeSquare || c == ' ') {
                 result.append(SET_BG_COLOR_LIGHT_GREY);
             } else if (currentSquareColor == SquareColor.LIGHT) {
-                result.append(lightSquareColor);
+                col += isWhite ? 1 : -1;
+                if (isAMove(row, col, moves)) {
+                    result.append(highLightColor);
+                } else {
+                    result.append(lightSquareColor);
+                }
             } else {
-                result.append(darkSquareColor);
+                col += isWhite ? 1 : -1;
+                if (isAMove(row, col, moves)) {
+                    result.append(highDarkColor);
+                } else {
+                    result.append(darkSquareColor);
+                }
             }
             if (edgeSquare) {
                 result.append(SET_TEXT_COLOR_PURPLE);
@@ -243,6 +305,8 @@ public class WebSocketHandler {
             if (c == '\n') {
                 result.append(RESET_BG_COLOR);
                 result.append(c);
+                row += isWhite ? -1 : 1;
+                col = isWhite ? 0 : 9;
             }
             else if (c == '_') {
                 result.append(EMPTY);
@@ -372,5 +436,14 @@ public class WebSocketHandler {
             }
         }
         return res;
+    }
+
+    private boolean isAMove(int row, int col, Collection<ChessPosition> moves) {
+        for (ChessPosition move : moves) {
+            if (move.equals(new ChessPosition(row, col))) {
+                return true;
+            }
+        }
+        return false;
     }
 }

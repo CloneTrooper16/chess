@@ -93,6 +93,10 @@ public class ServerFacade {
         ws.redrawBoard(authToken, gameID);
     }
 
+    public void highlightMoves(String authToken, int gameID, String square) throws ResponseException {
+        ws.highlightMoves(authToken, gameID, square);
+    }
+
     private <T> T makeRequest(String method, String path, Map<String, String> headers,
                               Object request, Class<T> responseClass) throws ResponseException {
         try {
