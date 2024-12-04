@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import exception.ResponseException;
 import model.GameMessage;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.Notification;
 
@@ -64,7 +65,8 @@ public class WebSocketCommunicator extends Endpoint {
     }
 
     private void handleError(String message) {
-        notificationHandler.notify("Error not implemented");
+        ErrorMessage errorMessage = new Gson().fromJson(message, ErrorMessage.class);
+        notificationHandler.notifyError(errorMessage.getMessage());
     }
 
     private void handleLoadGame(String message) {
@@ -75,7 +77,7 @@ public class WebSocketCommunicator extends Endpoint {
 
     public void connectGame(String authToken, int gameID) throws ResponseException {
         try {
-            var command = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
+            var command = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID+2);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());

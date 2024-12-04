@@ -14,6 +14,7 @@ import service.GameService;
 import websocket.ConnectionManager;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
@@ -55,13 +56,28 @@ public class WebSocketHandler {
         System.out.printf("Received: %s\n", message);
     }
 
+
+    private void handleError(Session session, String errorString) throws IOException {
+        System.out.printf("Error: %s\n", errorString);
+        var errorMessage = new ErrorMessage(errorString);
+        session.getRemote().sendString(new Gson().toJson(errorMessage));
+    }
+
     private void connect(int gameID, String authToken, Session session) throws IOException, ServerException {
         AuthData auth = authService.getAuth(authToken);
         GameData game = gameService.getGame(gameID);
+        if (game == null) {
+            handleError(session, "error: invalid gameID");
+            return;
+        }
+        if (auth == null) {
+            handleError(session, "error: invalid auth token");
+            return;
+        }
         String username = auth.username();
+        connections.add(gameID, username, session);
         String color = getPlayerColor(game, username);
         ChessGame.TeamColor teamColor = getTeamColor(color);
-        connections.add(gameID, username, session);
         var message = String.format("%s has joined the game as %s", username, color);
         var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(session, username, notification);

@@ -43,6 +43,12 @@ public class Repl implements NotificationHandler {
 
     public void printBoard(String board) {
         System.out.println("\n" + board);
+        printPrompt();
+    }
+
+    public void notifyError(String message) {
+        System.out.println("\n" + RESET_TEXT_COLOR + SET_TEXT_COLOR_RED + message);
+        printPrompt();
     }
 
     private void printPrompt() {
