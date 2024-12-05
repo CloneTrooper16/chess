@@ -229,7 +229,7 @@ public class WebSocketHandler {
         }
 
     }
-
+    //hopefully this works!
     private String parsePos(String pos) {
         int rowIndex = pos.indexOf("row");
         int colIndex = pos.indexOf("col");
