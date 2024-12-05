@@ -23,7 +23,6 @@ public class TestFactory {
          * If you would like to change the way the web socket test cases serialize
          * or deserialize chess objects like ChessMove, you may add type adapters here.
          */
-        //TODO: will I need to change this?
         GsonBuilder builder = new GsonBuilder();
         // builder.registerTypeAdapter(ChessMove.class, /*type adapter or json serializer */);
         return builder;

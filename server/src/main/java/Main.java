@@ -8,5 +8,4 @@ public class Main {
         var server = new Server();
         server.run(8080);
     }
-    //TODO: do the web socket stuff
 }

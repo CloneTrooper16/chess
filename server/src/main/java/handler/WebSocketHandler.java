@@ -67,7 +67,6 @@ public class WebSocketHandler {
         System.out.printf("Received: %s\n", message);
     }
 
-
     private void handleError(Session session, String errorString) throws IOException {
         System.out.printf("Error: %s\n", errorString);
         var errorMessage = new ErrorMessage(errorString);
@@ -227,7 +226,6 @@ public class WebSocketHandler {
         } catch (InvalidMoveException ex) {
             handleError(session, "error: invalid move");
         }
-
     }
     //hopefully this works!
     private String parsePos(String pos) {
@@ -235,42 +233,8 @@ public class WebSocketHandler {
         int colIndex = pos.indexOf("col");
         char rowChar = pos.charAt(rowIndex + 4);
         char colChar = pos.charAt(colIndex + 4);
-
-        return parseCol(colChar) + parseRow(rowChar);
-    }
-
-    private String parseCol(char colChar) {
-        switch(colChar) {
-            case '1' -> {
-                return "a";
-            }
-            case '2' -> {
-                return "b";
-            }
-            case '3' -> {
-                return "c";
-            }
-            case '4' -> {
-                return "d";
-            }
-            case '5' -> {
-                return "e";
-            }
-            case '6' -> {
-                return "f";
-            }
-            case '7' -> {
-                return "g";
-            }
-            case '8' -> {
-                return "h";
-            }
-        }
-        return "0";
-    }
-
-    private String parseRow(char rowInt) {
-        return String.valueOf(rowInt);
+        CharParser charParser = new CharParser();
+        return charParser.parseCol(colChar) + charParser.parseRow(rowChar);
     }
 
     private GameData doTheMove(GameData game, ChessBoard board, ChessMove move) throws InvalidMoveException {
@@ -289,7 +253,9 @@ public class WebSocketHandler {
     private boolean userWasPlayer(GameData game, String username) {
         if (game.whiteUsername() != null && game.whiteUsername().equals(username)) {
             return true;
-        } else return game.blackUsername() != null && game.blackUsername().equals(username);
+        } else {
+            return game.blackUsername() != null && game.blackUsername().equals(username);
+        }
     }
 
     private GameData removePlayer(GameData game, String userToRemove) {
@@ -347,15 +313,6 @@ public class WebSocketHandler {
             options.add(move.getEndPosition());
         }
         return options;
-    }
-
-
-    private String printWhiteBlackBoards(String blackBoard) {
-        String whiteBoard = reverseBoard(blackBoard);
-        whiteBoard = addBoardLetters(whiteBoard);
-        blackBoard = rotateBoard(whiteBoard);
-//        return printBoard(blackBoard) + "\n\n" + printBoard(whiteBoard);
-        return "";
     }
 
     private String printBoard(String board, Collection<ChessPosition> moves, boolean isWhite) {
@@ -496,7 +453,6 @@ public class WebSocketHandler {
         }
         return result.toString();
     }
-
     private String findChessUnicode(String s, String board, int i) {
         switch(s) {
             case "K" -> s = WHITE_KING;
@@ -520,7 +476,6 @@ public class WebSocketHandler {
         }
         return s;
     }
-
     private char findNextChar(char c, String board, int i) {
         int j = i + 1;
         char res = 'i';
@@ -533,7 +488,6 @@ public class WebSocketHandler {
         }
         return res;
     }
-
     private boolean isAMove(int row, int col, Collection<ChessPosition> moves) {
         for (ChessPosition move : moves) {
             if (move.equals(new ChessPosition(row, col))) {
