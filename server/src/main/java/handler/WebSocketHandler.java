@@ -1,9 +1,6 @@
 package handler;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPosition;
+import chess.*;
 import chess.rulebook.FIDERuleBook;
 import com.google.gson.Gson;
 import dataaccess.*;
@@ -23,7 +20,6 @@ import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
-
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -54,7 +50,6 @@ public class WebSocketHandler {
             UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
             switch (command.getCommandType()) {
                 case CONNECT -> connect(command.getGameID(), command.getAuthToken(), session);
-//                case MAKE_MOVE -> exit(command.getCommandType());
                 case LEAVE -> leave(command.getGameID(), command.getAuthToken(), session);
                 case RESIGN -> resign(command.getGameID(), command.getAuthToken(), session);
                 case DRAW -> redraw(command.getGameID(), command.getAuthToken(), session);
@@ -62,6 +57,7 @@ public class WebSocketHandler {
         } else {
             if (commandType == 'M') {
                 MakeMoveCommand command = new Gson().fromJson(message, MakeMoveCommand.class);
+                makeMove(command.getGameID(), command.getAuthToken(), command.getMove(), session);
             } else {
                 HighlightMovesCommand command = new Gson().fromJson(message, HighlightMovesCommand.class);
                 highlightMoves(command.getGameID(), command.getAuthToken(), command.getPos(), session);
@@ -94,9 +90,9 @@ public class WebSocketHandler {
         String color = getPlayerColor(game, username);
         ChessGame.TeamColor teamColor = getTeamColor(color);
         var message = String.format("%s has joined the game as %s", username, color);
-        var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        var notification = new Notification(message);
         connections.broadcast(session, username, notification);
-        String boardString = createBoardString(gameID, teamColor, null);
+        String boardString = createBoardString(game, teamColor, null);
         var gameMessage = new GameMessage(gameID, teamColor, boardString);
         var loadGame = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameMessage);
         connections.send(session, loadGame);
@@ -109,9 +105,13 @@ public class WebSocketHandler {
             handleError(session, "error: invalid auth token");
             return;
         }
+        if (game == null) {
+            handleError(session, "error: invalid gameID");
+            return;
+        }
         String username = auth.username();
         var message = String.format("%s has left the game", username);
-        var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        var notification = new Notification(message);
         connections.broadcast(session, username, notification);
         connections.remove(session);
         if (userWasPlayer(game, username)) {
@@ -139,15 +139,8 @@ public class WebSocketHandler {
         var newGame = endGame(game);
         gameService.updateGame(authToken, newGame);
         var message = String.format("%s has resigned", username);
-        var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        var notification = new Notification(message);
         connections.broadcast(session, null, notification);
-    }
-
-    private void exit(UserGameCommand.CommandType visitorName) throws IOException {
-//        connections.remove(visitorName);
-//        var message = String.format("%s left the shop", visitorName);
-//        var notification = new Notification(Notification.Type.DEPARTURE, message);
-//        connections.broadcast(visitorName, notification);
     }
 
     private void redraw(int gameID, String authToken, Session session) throws ServerException, IOException {
@@ -164,7 +157,7 @@ public class WebSocketHandler {
         String username = auth.username();
         String color = getPlayerColor(game, username);
         ChessGame.TeamColor teamColor = getTeamColor(color);
-        String boardString = createBoardString(gameID, teamColor, null);
+        String boardString = createBoardString(game, teamColor, null);
         var gameMessage = new GameMessage(gameID, teamColor, boardString);
         var loadGame = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameMessage);
         connections.send(session, loadGame);
@@ -184,12 +177,114 @@ public class WebSocketHandler {
         String username = auth.username();
         String color = getPlayerColor(game, username);
         ChessGame.TeamColor teamColor = getTeamColor(color);
-        String boardString = createBoardString(gameID, teamColor, pos);
+        String boardString = createBoardString(game, teamColor, pos);
         var gameMessage = new GameMessage(gameID, teamColor, boardString);
         var loadGame = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameMessage);
         connections.send(session, loadGame);
     }
 
+    private void makeMove(int gameID, String authToken, ChessMove move, Session session) throws ServerException, IOException {
+        AuthData auth = authService.getAuth(authToken);
+        GameData game = gameService.getGame(gameID);
+        if (auth == null) {
+            handleError(session, "error: invalid auth token");
+            return;
+        }
+        String username = auth.username();
+        if (!userWasPlayer(game, username)) {
+            handleError(session, "error: observers can't move pieces");
+            return;
+        }
+        if (game.isOver()) {
+            handleError(session, "error: can't move piece, game is finished");
+            return;
+        }
+        String color = getPlayerColor(game, username);
+        ChessGame.TeamColor teamColor = getTeamColor(color);
+        if (!isTurn(game.game(), teamColor)) {
+            handleError(session, "error: can't move piece; it's not your turn");
+            return;
+        }
+        ChessBoard board = game.game().getBoard();
+        try {
+            GameData newGame = doTheMove(game, board, move);
+            if (isMate(game.game())) {
+                newGame = new GameData(game.gameID(), game.whiteUsername(), game.blackUsername(),
+                        game.gameName(), game.game(), true);
+            }
+            String bothBoardString = createBoardString(newGame, ChessGame.TeamColor.WHITE, null)
+                                    + "SPLITTER"
+                                    + createBoardString(newGame, ChessGame.TeamColor.BLACK, null);
+            var gameMessage = new GameMessage(gameID, teamColor, bothBoardString);
+            var loadGame = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameMessage);
+            connections.broadcastNewBoard(session, loadGame);
+            gameService.updateGame(authToken, newGame);
+
+            var message = String.format("%s moved a piece from %s to %s", username,
+                    parsePos(move.getStartPosition().toString()), parsePos(move.getEndPosition().toString()));
+            var notification = new Notification(message);
+            connections.broadcast(session, username, notification);
+        } catch (InvalidMoveException ex) {
+            handleError(session, "error: invalid move");
+        }
+
+    }
+
+    private String parsePos(String pos) {
+        int rowIndex = pos.indexOf("row");
+        int colIndex = pos.indexOf("col");
+        char rowChar = pos.charAt(rowIndex + 4);
+        char colChar = pos.charAt(colIndex + 4);
+
+        return parseCol(colChar) + parseRow(rowChar);
+    }
+
+    private String parseCol(char colChar) {
+        switch(colChar) {
+            case '1' -> {
+                return "a";
+            }
+            case '2' -> {
+                return "b";
+            }
+            case '3' -> {
+                return "c";
+            }
+            case '4' -> {
+                return "d";
+            }
+            case '5' -> {
+                return "e";
+            }
+            case '6' -> {
+                return "f";
+            }
+            case '7' -> {
+                return "g";
+            }
+            case '8' -> {
+                return "h";
+            }
+        }
+        return "0";
+    }
+
+    private String parseRow(char rowInt) {
+        return String.valueOf(rowInt);
+    }
+
+    private GameData doTheMove(GameData game, ChessBoard board, ChessMove move) throws InvalidMoveException {
+        game.game().makeMove(move);
+        return game;
+    }
+
+    private boolean isTurn(ChessGame game, ChessGame.TeamColor color) {
+        return color == game.getTeamTurn();
+    }
+
+    private boolean isMate(ChessGame game) {
+        return game.isGameOver();
+    }
 
     private boolean userWasPlayer(GameData game, String username) {
         if (game.whiteUsername() != null && game.whiteUsername().equals(username)) {
@@ -221,14 +316,13 @@ public class WebSocketHandler {
     }
 
     private ChessGame.TeamColor getTeamColor(String color) {
-        if (color.equals("white")) {
-            return ChessGame.TeamColor.WHITE;
+        if (color.equals("black")) {
+            return ChessGame.TeamColor.BLACK;
         }
-        return ChessGame.TeamColor.BLACK;
+        return ChessGame.TeamColor.WHITE;
     }
 
-    private String createBoardString(int gameID, ChessGame.TeamColor color, ChessPosition pos) throws ServerException {
-        GameData gameData = gameService.getGame(gameID);
+    private String createBoardString(GameData gameData, ChessGame.TeamColor color, ChessPosition pos) throws ServerException {
         int gameId = gameData.gameID();
         String board = gameData.game().getBoard().toString();
         ChessBoard chessBoard = gameData.game().getBoard();
@@ -238,10 +332,10 @@ public class WebSocketHandler {
         if (pos != null) {
             moves.addAll(getLegalMoves(pos, chessBoard));
         }
-        if (color == ChessGame.TeamColor.WHITE) {
-            return printBoard(whiteBoard, moves, true);
+        if (color == ChessGame.TeamColor.BLACK) {
+            return printBoard(rotateBoard(whiteBoard), moves, false);
         } else {
-            return printBoard(rotateBoard(whiteBoard), moves, false); //observer need change here?
+            return printBoard(whiteBoard, moves, true);
         }
     }
 

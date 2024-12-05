@@ -1,6 +1,7 @@
 package client;
 
 import chess.ChessGame;
+import chess.ChessPiece;
 import client.websocket.NotificationHandler;
 import client.websocket.WebSocketCommunicator;
 import exception.ResponseException;
@@ -11,6 +12,7 @@ import client.facade.ServerFacade;
 
 import java.util.*;
 
+import static chess.ChessPiece.PieceType.*;
 import static ui.EscapeSequences.*;
 
 public class ChessClient {
@@ -47,7 +49,7 @@ public class ChessClient {
                 case "resign" -> resignGame();
                 case "redraw" -> redrawBoard();
                 case "highlight" -> highlightMove(params);
-                case "move" -> makeMove();
+                case "move" -> makeMove(params);
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -168,6 +170,7 @@ public class ChessClient {
                 int gameID = gameInfo.gameID();
                 server.observeGame(userAuth.authToken(), gameID);
                 state = State.GAMING;
+                currentGameID = gameID;
                 return "";
             }
             else {
@@ -205,8 +208,39 @@ public class ChessClient {
         throw new ResponseException(400, "Expected: <square>");
     }
 
-    public String makeMove() {
-        return "move not implemented";
+    public String makeMove(String... params) throws ResponseException {
+        assertGaming();
+        if (params.length == 2) {
+            server.makeMove(userAuth.authToken(), currentGameID, params[0], params[1], null);
+            return "";
+        }
+        if (params.length == 3) {
+            ChessPiece.PieceType promoPiece = null;
+            if (params[2] != null) {
+                promoPiece = parsePiece(params[2]);
+            }
+            server.makeMove(userAuth.authToken(), currentGameID, params[0], params[1], promoPiece);
+            return "";
+        }
+        throw new ResponseException(400, "Expected: <square> <destination>");
+    }
+
+    private ChessPiece.PieceType parsePiece(String piece) {
+        switch (piece.toLowerCase()) {
+            case "n" -> {
+                return KNIGHT;
+            }
+            case "b" -> {
+                return BISHOP;
+            }
+            case "r" -> {
+                return ROOK;
+            }
+            case "q" -> {
+                return QUEEN;
+            }
+        }
+        return null;
     }
 
     public String help() {
@@ -280,4 +314,6 @@ public class ChessClient {
         }
         return false;
     }
+
+
 }

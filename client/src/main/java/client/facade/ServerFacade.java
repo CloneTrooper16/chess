@@ -1,6 +1,7 @@
 package client.facade;
 
 import chess.ChessGame;
+import chess.ChessPiece;
 import client.websocket.NotificationHandler;
 import client.websocket.WebSocketCommunicator;
 import com.google.gson.Gson;
@@ -95,6 +96,10 @@ public class ServerFacade {
 
     public void highlightMoves(String authToken, int gameID, String square) throws ResponseException {
         ws.highlightMoves(authToken, gameID, square);
+    }
+
+    public void makeMove(String authToken, int gameID, String square, String destination, ChessPiece.PieceType promo) throws ResponseException {
+        ws.makeMove(authToken, gameID, square, destination, promo);
     }
 
     private <T> T makeRequest(String method, String path, Map<String, String> headers,

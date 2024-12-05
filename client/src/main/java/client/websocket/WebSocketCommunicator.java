@@ -1,10 +1,13 @@
 package client.websocket;
 
+import chess.ChessMove;
+import chess.ChessPiece;
 import chess.ChessPosition;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.GameMessage;
 import websocket.commands.HighlightMovesCommand;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
@@ -117,6 +120,23 @@ public class WebSocketCommunicator extends Endpoint {
         try {
             ChessPosition pos = parsePos(square);
             var command = new HighlightMovesCommand(UserGameCommand.CommandType.HIGHLIGHT, authToken, gameID, pos);
+            this.session.getBasicRemote().sendText(new Gson().toJson(command));
+        } catch (IOException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+    }
+
+    public void makeMove(String authToken, int gameID, String square, String destination, ChessPiece.PieceType promo) throws ResponseException {
+        try {
+            ChessPosition pos = parsePos(square);
+            ChessPosition endPos = parsePos(destination);
+            ChessMove move;
+            if (promo == null) {
+                move = new ChessMove(pos, endPos);
+            } else {
+                move = new ChessMove(pos, endPos, promo);
+            }
+            var command = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID, move);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());

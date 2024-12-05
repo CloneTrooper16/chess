@@ -4,7 +4,6 @@ import chess.rulebook.FIDERuleBook;
 import chess.rulebook.RuleBook;
 
 import java.util.Collection;
-import java.util.HashSet;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -247,6 +246,11 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         return ruleBook.isInStalemate(teamColor);
+    }
+
+    public boolean isGameOver() {
+        return isInCheckmate(TeamColor.WHITE) || isInCheckmate(TeamColor.BLACK)
+                || isInStalemate(TeamColor.WHITE) || isInStalemate(TeamColor.BLACK);
     }
 
     /**

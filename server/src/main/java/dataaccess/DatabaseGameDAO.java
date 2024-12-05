@@ -89,6 +89,8 @@ public class DatabaseGameDAO implements GameDAO {
         boolean overBoolean = Boolean.parseBoolean(overString);
         Gson gson = new ChessDeserializer().createChessGson();
         ChessGame game = gson.fromJson(jsonString, ChessGame.class);
+        game.setBoard(game.getBoard());
+
         return new GameData(gameID, whiteUsername, blackUsername, gameName, game, overBoolean);
     }
 
